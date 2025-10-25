@@ -1,0 +1,12 @@
+version: '3.8'
+name: c_daemon_development
+services:
+    trixie:
+        container_name: demon_hunter
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+          - ./sensing_rigs_daemon:/demon
+        tty: true
+        stdin_open: true
