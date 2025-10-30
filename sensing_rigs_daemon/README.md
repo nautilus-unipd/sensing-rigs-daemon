@@ -2,7 +2,7 @@
 
 > Software developed for Nautilus-UniPD student organization.
 
-## CONTENUTI
+## Contents
 
 - [Description](#description)
 - [Software used](#software-used)
