@@ -1,3 +1,5 @@
+// TODO: internal error handling
+
 #include "daemon_functions.h"
 
 void _close_all_fds(void)
@@ -12,6 +14,74 @@ void _close_all_fds(void)
         close(fd);
     }
     return;
+}
+
+bool pid_check_file(void)
+{
+    char* full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
+    strcpy(full_path_pid, DAEMON_BASE_PATH);
+    strcat(full_path_pid, DAEMON_FILE_PID);
+    FILE* restrict pid_file = fopen(full_path_pid, "r");
+    free(full_path_pid);
+    full_path_pid = NULL;
+    if(pid_file == NULL)
+    {
+        return false;
+    }
+    char c = fgetc(pid_file);
+    fclose(pid_file);
+    pid_file = NULL;
+    if(c == EOF)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool pid_create_file(void)
+{
+    char* restrict full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
+    strcpy(full_path_pid, DAEMON_BASE_PATH);
+    strcat(full_path_pid, DAEMON_FILE_PID);
+    FILE* restrict pid_file = fopen(full_path_pid, "w");
+    free(full_path_pid);
+    full_path_pid = NULL;
+    if(pid_file == NULL)
+    {
+        return false;
+    }
+    if(fprintf(pid_file, "%d", getpid()) <= 0)
+    {
+        fclose(pid_file);
+        pid_file = NULL;
+        return false;
+    }
+    fclose(pid_file);
+    pid_file = NULL;
+    return true;
+}
+
+bool pid_close_file(void)
+{
+    char* restrict full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
+    strcpy(full_path_pid, DAEMON_BASE_PATH);
+    strcat(full_path_pid, DAEMON_FILE_PID);
+    FILE* restrict pid_file = fopen(full_path_pid, "w");
+    free(full_path_pid);
+    full_path_pid = NULL;
+    if(pid_file == NULL)
+    {
+        return false;
+    }
+    if(fprintf(pid_file, "%s", "") < 0)
+    {
+        fclose(pid_file);
+        pid_file = NULL;
+        return false;
+    }
+    fclose(pid_file);
+    pid_file = NULL;
+    return true;
 }
 
 void daemon_create(void)
@@ -71,6 +141,18 @@ void daemon_create(void)
         exit(EXIT_FAILURE);
     }
 
+    // Check for already running instances of this daemon
+    if(pid_check_file())
+    {
+        perror(ERR_DAEMON_RUNNING);
+        exit(EXIT_FAILURE);
+    }
+    if(!pid_create_file())
+    {
+        perror(ERR_DAEMON_PID_CREATE);
+        exit(EXIT_FAILURE);
+    }
+
     // Start logging system
     init_logging();
 
@@ -88,33 +170,23 @@ void daemon_create(void)
     {
         exit(EXIT_FAILURE);
     }
+
     if(dup2(STDIN_FILENO, STDERR_FILENO) != STDERR_FILENO)
     {
         exit(EXIT_FAILURE);
     }
-
-    // Write daemon pid to a file
-    pid = getpid();
-    char* restrict full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
-    strcpy(full_path_pid, DAEMON_BASE_PATH);
-    strcat(full_path_pid, DAEMON_FILE_PID);
-    FILE* restrict pid_file = fopen(full_path_pid, "w");
-    if(pid_file == NULL)
-    {
-        free(full_path_pid);
-        full_path_pid = NULL;
-        exit(EXIT_FAILURE);
-    }
-    fprintf(pid_file, "%d", pid);
-    fclose(pid_file);
-    pid_file = NULL;
-    free(full_path_pid);
-    full_path_pid = NULL;
     return;
 }
 
 void daemon_terminate(void)
 {
+    // Close PID file
+    if(!pid_close_file())
+    {
+        perror("[-] Guh");
+        exit(EXIT_FAILURE);
+    }
+
     // Terminate logging system
     terminate_logging();
 
