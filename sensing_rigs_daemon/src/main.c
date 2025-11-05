@@ -8,15 +8,13 @@ int main(void)
 	daemon_create();
 
     // Daemon's main loop
-	while(1)
+    bool flag_run = true;
+	while(flag_run)
 	{
-        append_log(INFO, "Message inside loop");
         sleep(5);
-        append_log(INFO, " inside loop");
-        break;
+        flag_run = false;
 	}
 
-    append_log(INFO, "Terminated daemon main loop");
     // Terminate daemon
     daemon_terminate();
 

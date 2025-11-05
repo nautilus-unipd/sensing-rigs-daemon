@@ -10,7 +10,6 @@
 
 - [ ] Internal log handling
 - [ ] Add log rotation?
-- [ ] Divide log files according to their date
 - [ ] Create custom structure to hold last 'N' log entries, instead of using a buffer
 
 ## Source files

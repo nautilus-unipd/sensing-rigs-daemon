@@ -36,7 +36,6 @@ void init_logging(void)
         // TODO: internal error handling
         exit(EXIT_FAILURE);
     }
-    append_log(INFO, "sensing_rigs_daemon started!");
     return;
 }
 
@@ -124,9 +123,44 @@ void append_log(enum LogLevel_t level, const char* restrict msg)
 
 void write_log(void)
 {
-    char* restrict full_path_log = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_LOG) + 1);
-    strcpy(full_path_log, DAEMON_BASE_PATH);
-    strcat(full_path_log, DAEMON_FILE_LOG);
+    char* restrict full_path_log = (char*)malloc(strlen(DAEMON_PATH_LOG));
+    if(full_path_log == NULL)
+    {
+        // TODO: internal error
+        exit(EXIT_FAILURE);
+    }
+    time_t* restrict time_raw = (time_t*)malloc(sizeof(time_t));
+    if(time_raw == NULL)
+    {
+        // TODO: internal error
+        free(full_path_log);
+        full_path_log = NULL;
+        exit(EXIT_FAILURE);
+    }
+    *(time_raw) = time(NULL);
+    struct tm* restrict time_local = localtime(time_raw);
+    if(time_local == NULL)
+    {
+        free(full_path_log);
+        full_path_log = NULL;
+        free(time_raw);
+        time_raw = NULL;
+        // TODO: internal error
+        exit(EXIT_FAILURE);
+    }
+    if(snprintf(full_path_log, strlen(DAEMON_PATH_LOG), DAEMON_PATH_LOG, time_local->tm_year + 1900, time_local->tm_mon + 1, time_local->tm_mday) < 0)
+    {
+        free(full_path_log);
+        full_path_log = NULL;
+        free(time_raw);
+        time_raw = NULL;
+        time_local = NULL;
+        // TODO: internal error
+        exit(EXIT_FAILURE);
+    }
+    free(time_raw);
+    time_raw = NULL;
+    time_local = NULL;
     pthread_mutex_lock(&mutex_lf);
     FILE* restrict log_file = fopen(full_path_log, "a");
     if(log_file == NULL)
@@ -137,7 +171,7 @@ void write_log(void)
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
-    if(fprintf(log_file, log_buffer.buffer) < 0)
+    if(write(fileno(log_file), log_buffer.buffer, MAX_BUFF_DIM) < 0)
     {
         fclose(log_file);
         log_file = NULL;

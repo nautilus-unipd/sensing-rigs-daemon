@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
 
@@ -55,7 +56,7 @@ extern void enable_logging(void);
  * buffer. Automatically appends to the log message a string
  * containing the timestamp and its log level.
  * @param   LogLevel_t  Gravity level of the log message.
- * @param   const char* Message to log.
+ * @param   const char* Message to write.
  */
 extern void append_log(enum LogLevel_t, const char* restrict);
 

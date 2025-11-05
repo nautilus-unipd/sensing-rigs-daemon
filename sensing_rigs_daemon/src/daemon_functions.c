@@ -18,12 +18,7 @@ void _close_all_fds(void)
 
 bool pid_check_file(void)
 {
-    char* full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
-    strcpy(full_path_pid, DAEMON_BASE_PATH);
-    strcat(full_path_pid, DAEMON_FILE_PID);
-    FILE* restrict pid_file = fopen(full_path_pid, "r");
-    free(full_path_pid);
-    full_path_pid = NULL;
+    FILE* restrict pid_file = fopen(DAEMON_PATH_PID, "r");
     if(pid_file == NULL)
     {
         return false;
@@ -31,21 +26,17 @@ bool pid_check_file(void)
     char c = fgetc(pid_file);
     fclose(pid_file);
     pid_file = NULL;
-    if(c == EOF)
+    if((c == EOF) || (c == '\0'))
     {
         return false;
     }
+    errno = EEXIST;
     return true;
 }
 
 bool pid_create_file(void)
 {
-    char* restrict full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
-    strcpy(full_path_pid, DAEMON_BASE_PATH);
-    strcat(full_path_pid, DAEMON_FILE_PID);
-    FILE* restrict pid_file = fopen(full_path_pid, "w");
-    free(full_path_pid);
-    full_path_pid = NULL;
+    FILE* restrict pid_file = fopen(DAEMON_PATH_PID, "w");
     if(pid_file == NULL)
     {
         return false;
@@ -56,24 +47,7 @@ bool pid_create_file(void)
         pid_file = NULL;
         return false;
     }
-    fclose(pid_file);
-    pid_file = NULL;
-    return true;
-}
-
-bool pid_close_file(void)
-{
-    char* restrict full_path_pid = (char*)malloc(strlen(DAEMON_BASE_PATH) + strlen(DAEMON_FILE_PID) + 1);
-    strcpy(full_path_pid, DAEMON_BASE_PATH);
-    strcat(full_path_pid, DAEMON_FILE_PID);
-    FILE* restrict pid_file = fopen(full_path_pid, "w");
-    free(full_path_pid);
-    full_path_pid = NULL;
-    if(pid_file == NULL)
-    {
-        return false;
-    }
-    if(fprintf(pid_file, "%s", "") < 0)
+    if(flock(fileno(pid_file), LOCK_EX | LOCK_NB) < 0)
     {
         fclose(pid_file);
         pid_file = NULL;
@@ -82,6 +56,30 @@ bool pid_close_file(void)
     fclose(pid_file);
     pid_file = NULL;
     return true;
+}
+
+void pid_close_file(void)
+{
+    FILE* restrict pid_file = fopen(DAEMON_PATH_PID, "w");
+    if(pid_file == NULL)
+    {
+        return;
+    }
+    if(flock(fileno(pid_file), LOCK_UN) < 0)
+    {
+        fclose(pid_file);
+        pid_file = NULL;
+        return;
+    }
+    if(write(fileno(pid_file), "\0", 1) < 0)
+    {
+        fclose(pid_file);
+        pid_file = NULL;
+        return;
+    }
+    fclose(pid_file);
+    pid_file = NULL;
+    return;
 }
 
 void daemon_create(void)
@@ -144,50 +142,38 @@ void daemon_create(void)
     // Check for already running instances of this daemon
     if(pid_check_file())
     {
-        perror(ERR_DAEMON_RUNNING);
+        perror(ERR_DAEMON_CREATE);
         exit(EXIT_FAILURE);
     }
     if(!pid_create_file())
     {
-        perror(ERR_DAEMON_PID_CREATE);
+        perror(ERR_DAEMON_CREATE);
         exit(EXIT_FAILURE);
     }
 
     // Start logging system
     init_logging();
+    append_log(INFO, MSG_DAEMON_STARTED);
 
+/*
     // Close every open file descriptor
     _close_all_fds();
 
     // Close STDIN and redirect STDOUT and STDERR to default file
     close(STDIN_FILENO);
-    int16_t fd = open(REDIRECT_FILE, O_RDWR);
-    if(fd != STDIN_FILENO)
-    {
-        exit(EXIT_FAILURE);
-    }
-    if(dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
-    {
-        exit(EXIT_FAILURE);
-    }
-
-    if(dup2(STDIN_FILENO, STDERR_FILENO) != STDERR_FILENO)
-    {
-        exit(EXIT_FAILURE);
-    }
+    dup2(STDIN_FILENO, STDOUT_FILENO);
+    dup2(STDIN_FILENO, STDERR_FILENO);
+*/
     return;
 }
 
 void daemon_terminate(void)
 {
     // Close PID file
-    if(!pid_close_file())
-    {
-        perror("[-] Guh");
-        exit(EXIT_FAILURE);
-    }
+    pid_close_file();
 
     // Terminate logging system
+    append_log(INFO, MSG_DAEMON_KILLED);
     terminate_logging();
 
     // Close every open file descriptor

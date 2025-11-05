@@ -16,19 +16,14 @@ extern const char* restrict BASE_LOG_ENTRY;
 extern const char* restrict REDIRECT_FILE;
 
 /**
- * Base path for the daemon runtimes.
+ * Absolute path for the log directory.
  */
-extern const char* restrict DAEMON_BASE_PATH;
+extern const char* restrict DAEMON_PATH_LOG;
 
 /**
- * Name of the log file used.
+ * Absolute path for the PID file.
  */
-extern const char* restrict DAEMON_FILE_LOG;
-
-/**
- * Name of the pid file used.
- */
-extern const char* restrict DAEMON_FILE_PID;
+extern const char* restrict DAEMON_PATH_PID;
 
 /**
  * Define maximum number of file descriptors to close in case

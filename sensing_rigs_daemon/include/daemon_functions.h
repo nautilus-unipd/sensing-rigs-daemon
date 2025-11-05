@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stddef.h>
 #include <signal.h>
 #include <unistd.h>
@@ -49,7 +49,7 @@ bool pid_create_file(void);
  * @return  bool    true if the closing was succesful,
  *                  false otherwise.
  */
-bool pid_close_file(void);
+void pid_close_file(void);
 
 /**
  * Function that cleans up all the components of a daemon.
