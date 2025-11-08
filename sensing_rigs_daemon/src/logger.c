@@ -24,6 +24,29 @@ void _clear_buffer(void)
     return;
 }
 
+
+struct tm* _get_local_time(void)
+{
+    time_t* restrict time_raw = (time_t*)malloc(sizeof(time_t));
+    if(time_raw == NULL)
+    {
+        // TODO: internal error
+        exit(EXIT_FAILURE);
+    }
+    *(time_raw) = time(NULL);
+    struct tm* time_local = localtime(time_raw);
+    if(time_local == NULL)
+    {
+        free(time_raw);
+        time_raw = NULL;
+        // TODO: internal error
+        exit(EXIT_FAILURE);
+    }
+    free(time_raw);
+    time_raw = NULL;
+    return time_local;
+}
+
 void init_logging(void)
 {
     pthread_mutex_lock(&mutex_lb);
@@ -61,34 +84,15 @@ void append_log(enum LogLevel_t level, const char* restrict msg)
     {
         return;
     }
-    time_t* restrict time_raw = (time_t*)malloc(sizeof(time_t));
-    if(time_raw == NULL)
-    {
-        // TODO: internal error
-        exit(EXIT_FAILURE);
-    }
-    *(time_raw) = time(NULL);
-    struct tm* restrict time_local = localtime(time_raw);
-    if(time_local == NULL)
-    {
-        free(time_raw);
-        time_raw = NULL;
-        // TODO: internal error
-        exit(EXIT_FAILURE);
-    }
     char* restrict real_msg = (char*)calloc(MAX_BUFF_DIM, sizeof(char));
     if(real_msg == NULL)
     {
-        free(time_raw);
-        time_raw = NULL;
-        time_local = NULL;
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
+    struct tm* time_local = _get_local_time();
     if(snprintf(real_msg, MAX_BUFF_DIM, BASE_LOG_ENTRY, time_local->tm_hour, time_local->tm_min, time_local->tm_sec, level, msg) < 0)
     {
-        free(time_raw);
-        time_raw = NULL;
         time_local = NULL;
         free(real_msg);
         real_msg = NULL;
@@ -99,13 +103,11 @@ void append_log(enum LogLevel_t level, const char* restrict msg)
     {
         write_log(); 
     }
+    time_local = NULL;
     pthread_mutex_lock(&mutex_lb);
     if(strncpy(log_buffer.buffer + log_buffer.size, real_msg, strlen(real_msg)) == NULL)
     {
         pthread_mutex_unlock(&mutex_lb);
-        free(time_raw);
-        time_raw = NULL;
-        time_local = NULL;
         free(real_msg);
         real_msg = NULL;
         // TODO: internal error
@@ -113,9 +115,6 @@ void append_log(enum LogLevel_t level, const char* restrict msg)
     }
     log_buffer.size += strlen(real_msg);
     pthread_mutex_unlock(&mutex_lb);
-    free(time_raw);
-    time_raw = NULL;
-    time_local = NULL;
     free(real_msg);
     real_msg = NULL;
     return;
@@ -123,51 +122,44 @@ void append_log(enum LogLevel_t level, const char* restrict msg)
 
 void write_log(void)
 {
-    char* restrict full_path_log = (char*)malloc(strlen(DAEMON_PATH_LOG));
+    char* restrict full_path_log = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_LOG) + strlen(BASE_LOG_FILE) + 1));
     if(full_path_log == NULL)
     {
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
-    time_t* restrict time_raw = (time_t*)malloc(sizeof(time_t));
-    if(time_raw == NULL)
-    {
-        // TODO: internal error
-        free(full_path_log);
-        full_path_log = NULL;
-        exit(EXIT_FAILURE);
-    }
-    *(time_raw) = time(NULL);
-    struct tm* restrict time_local = localtime(time_raw);
-    if(time_local == NULL)
+    strcpy(full_path_log, DAEMON_PATH);
+    strcat(full_path_log, DAEMON_PATH_LOG);
+    strcat(full_path_log, BASE_LOG_FILE);
+    char* restrict real_file_log = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_LOG) + strlen(BASE_LOG_FILE) + 1));
+    if(real_file_log == NULL)
     {
         free(full_path_log);
         full_path_log = NULL;
-        free(time_raw);
-        time_raw = NULL;
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
-    if(snprintf(full_path_log, strlen(DAEMON_PATH_LOG), DAEMON_PATH_LOG, time_local->tm_year + 1900, time_local->tm_mon + 1, time_local->tm_mday) < 0)
+    struct tm* time_local = _get_local_time();
+    if(snprintf(real_file_log, strlen(DAEMON_PATH) + strlen(DAEMON_PATH_LOG) + strlen(BASE_LOG_FILE) + 1, full_path_log, time_local->tm_year + 1900, time_local->tm_mon + 1, time_local->tm_mday) < 0)
     {
+        free(real_file_log);
+        real_file_log = NULL;
         free(full_path_log);
         full_path_log = NULL;
-        free(time_raw);
-        time_raw = NULL;
         time_local = NULL;
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
-    free(time_raw);
-    time_raw = NULL;
+    free(full_path_log);
+    full_path_log = NULL;
     time_local = NULL;
     pthread_mutex_lock(&mutex_lf);
-    FILE* restrict log_file = fopen(full_path_log, "a");
+    FILE* restrict log_file = fopen(real_file_log, "a");
+    free(real_file_log);
+    real_file_log = NULL;
     if(log_file == NULL)
     {
         pthread_mutex_unlock(&mutex_lf);
-        free(full_path_log);
-        full_path_log = NULL;
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
@@ -176,16 +168,12 @@ void write_log(void)
         fclose(log_file);
         log_file = NULL;
         pthread_mutex_unlock(&mutex_lf);
-        free(full_path_log);
-        full_path_log = NULL;
         // TODO: internal error
         exit(EXIT_FAILURE);
     }
     fclose(log_file);
     log_file = NULL;
     pthread_mutex_unlock(&mutex_lf);
-    free(full_path_log);
-    full_path_log = NULL;
     _clear_buffer();
     return;
 }

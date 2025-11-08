@@ -31,25 +31,34 @@ void daemon_create(void);
 void _close_all_fds(void);
 
 /**
+ * Function that opens the PID file.
+ * @param   bool    flag that represents the mode for the new file:
+ *                  true for "write",
+ *                  false for "read".
+ * @return  FILE*   pointer to file stream, NULL in case of errors.
+ */
+FILE* open_pid_file(bool);
+
+/**
  * Function that checks if the PID file already exists.
  * @return  bool    true if the PID file exists and contains a valid value,
  *                  false otherwise.
  */
-bool pid_check_file(void);
+bool check_pid_file(void);
 
 /**
  * Function that creates and writes the PID of the daemon to the PID file.
  * @return  bool    true if the creation is succesful,
  *                  false otherwise.
  */
-bool pid_create_file(void);
+bool create_pid_file(void);
 
 /**
  * Function that closes the PID file. This one must be called when the daemon quits.
  * @return  bool    true if the closing was succesful,
  *                  false otherwise.
  */
-void pid_close_file(void);
+void close_pid_file(void);
 
 /**
  * Function that cleans up all the components of a daemon.

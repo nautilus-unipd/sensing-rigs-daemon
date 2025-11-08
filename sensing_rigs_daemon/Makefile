@@ -2,8 +2,6 @@
 BDIR := ./build
 IDIR := ./include
 SDIR := ./src
-RDIR := ./run
-LDIR := $(RDIR)/sensing_rigs_daemon.log.d/
 
 # Define used compiler and its options
 CC := gcc
@@ -29,8 +27,6 @@ all: $(EXEC)
 # Compile every source file inside ./src placing the object files in ./build
 $(BDIR)/%.o: $(SDIR)/%.c
 	@mkdir -p $(BDIR)
-	@mkdir -p $(RDIR)
-	@mkdir -p $(LDIR)
 	@$(CC) $(CFLAGS) $(IFLAGS) -c $< -o $@
 
 # Define the rule for linking object files into the executable

@@ -6,24 +6,36 @@
 // Daemon's shared constants.
 
 /**
- * Define the base format for a log message.
- */
-extern const char* restrict BASE_LOG_ENTRY;
-
-/**
  * Default file to redirect STDOUT and STDERR.
  */
 extern const char* restrict REDIRECT_FILE;
 
 /**
- * Absolute path for the log directory.
+ * Define the base absolute path for the daemon runtimes.
+ */
+extern const char* restrict DAEMON_PATH;
+
+/**
+ * Relative path for the log directory, with respect to "DAEMON_PATH".
  */
 extern const char* restrict DAEMON_PATH_LOG;
 
 /**
- * Absolute path for the PID file.
+ * Relative path for the PID file, with respect to "DAEMON_PATH".
  */
 extern const char* restrict DAEMON_PATH_PID;
+
+/**
+ * Base format for a log file, takes the form:
+ * YYYY-MM-DD.log
+ */
+extern const char* restrict BASE_LOG_FILE;
+
+/**
+ * Base format for a log entry, takes the form:
+ * hh:mm:ss, <level>, <msg>
+ */
+extern const char* restrict BASE_LOG_ENTRY;
 
 /**
  * Define maximum number of file descriptors to close in case

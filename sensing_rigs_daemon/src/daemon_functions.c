@@ -16,9 +16,32 @@ void _close_all_fds(void)
     return;
 }
 
-bool pid_check_file(void)
+FILE* open_pid_file(bool flag)
 {
-    FILE* restrict pid_file = fopen(DAEMON_PATH_PID, "r");
+    char* restrict path_pid = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_PID) + 1));
+    if(path_pid == NULL)
+    {
+        return NULL;
+    }
+    strcpy(path_pid, DAEMON_PATH);
+    strcat(path_pid, DAEMON_PATH_PID);
+    FILE* pid_file = NULL;
+    if(flag)
+    {
+        pid_file = fopen(path_pid, "w");
+    }
+    else
+    {
+        pid_file = fopen(path_pid, "r");
+    }
+    free(path_pid);
+    path_pid = NULL;
+    return pid_file;
+}
+
+bool check_pid_file(void)
+{
+    FILE* restrict pid_file = open_pid_file(false);
     if(pid_file == NULL)
     {
         return false;
@@ -34,9 +57,9 @@ bool pid_check_file(void)
     return true;
 }
 
-bool pid_create_file(void)
+bool create_pid_file(void)
 {
-    FILE* restrict pid_file = fopen(DAEMON_PATH_PID, "w");
+    FILE* pid_file = open_pid_file(true);
     if(pid_file == NULL)
     {
         return false;
@@ -58,9 +81,9 @@ bool pid_create_file(void)
     return true;
 }
 
-void pid_close_file(void)
+void close_pid_file(void)
 {
-    FILE* restrict pid_file = fopen(DAEMON_PATH_PID, "w");
+    FILE* restrict pid_file = open_pid_file(true);
     if(pid_file == NULL)
     {
         return;
@@ -139,13 +162,37 @@ void daemon_create(void)
         exit(EXIT_FAILURE);
     }
 
-    // Check for already running instances of this daemon
-    if(pid_check_file())
+    // Create runtimes directories
+    if((mkdir(DAEMON_PATH, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH)) != 0 && (errno != EEXIST))
     {
         perror(ERR_DAEMON_CREATE);
         exit(EXIT_FAILURE);
     }
-    if(!pid_create_file())
+    char* restrict path_log = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_LOG) + 1));
+    if(path_log == NULL)
+    {
+        perror(ERR_DAEMON_CREATE);
+        exit(EXIT_FAILURE);
+    }
+    strcat(path_log, DAEMON_PATH);
+    strcat(path_log, DAEMON_PATH_LOG);
+    if((mkdir(path_log, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) && (errno != EEXIST))
+    {
+        free(path_log);
+        path_log = NULL;
+        perror(ERR_DAEMON_CREATE);
+        exit(EXIT_FAILURE);
+    }
+    free(path_log);
+    path_log = NULL;
+
+    // Check for already running instances of this daemon
+    if(check_pid_file())
+    {
+        perror(ERR_DAEMON_CREATE);
+        exit(EXIT_FAILURE);
+    }
+    if(!create_pid_file())
     {
         perror(ERR_DAEMON_CREATE);
         exit(EXIT_FAILURE);
@@ -155,7 +202,6 @@ void daemon_create(void)
     init_logging();
     append_log(INFO, MSG_DAEMON_STARTED);
 
-/*
     // Close every open file descriptor
     _close_all_fds();
 
@@ -163,14 +209,13 @@ void daemon_create(void)
     close(STDIN_FILENO);
     dup2(STDIN_FILENO, STDOUT_FILENO);
     dup2(STDIN_FILENO, STDERR_FILENO);
-*/
     return;
 }
 
 void daemon_terminate(void)
 {
     // Close PID file
-    pid_close_file();
+    close_pid_file();
 
     // Terminate logging system
     append_log(INFO, MSG_DAEMON_KILLED);

@@ -11,7 +11,7 @@ int main(void)
     bool flag_run = true;
 	while(flag_run)
 	{
-        sleep(5);
+        sleep(3);
         flag_run = false;
 	}
 

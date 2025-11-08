@@ -80,4 +80,9 @@ extern void terminate_logging(void);
  */
 extern void _clear_buffer(void);
 
+/**
+ * Helper function that returns an instance of a time struct.
+ */
+extern struct tm* _get_local_time(void);
+
 #endif //_LOGGER_H_
