@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -33,11 +34,19 @@ enum LogLevel_t
 };
 
 /**
+ * Performs some cleanup actions when an internal error occurs
+ * in the logging system.
+ */
+extern void internal_error(void);
+
+/**
  * Initializes the logging system. Does not open the actual 
  * log file, but initializes the buffer that will temporarily
  * hold some log messages.
+ * @return  int EXIT_FAILURE if any error occurs,
+ *              EXIT_SUCCESS otherwise.
  */
-extern void init_logging(void);
+extern int init_logging(void);
 
 /**
  * Disables all logging messages.
@@ -57,16 +66,20 @@ extern void enable_logging(void);
  * containing the timestamp and its log level.
  * @param   LogLevel_t  Gravity level of the log message.
  * @param   const char* Message to write.
+ * @return  int EXIT_FAILURE if any error occurs,
+ *              EXIT_SUCCESS otherwise.
  */
-extern void append_log(enum LogLevel_t, const char* restrict);
+extern int append_log(enum LogLevel_t, const char* restrict);
 
 /**
  * Opens the actul log file, which path is a constant, and
  * copies the content of the temporarily buffer to it.
  * After this operation the buffer is freed and the log
  * file descriptor is closed.
+ * @return  int EXIT_FAILURE if any error occurs,
+ *              EXIT_SUCCESS otherwise.
  */
-extern void write_log(void);
+extern int write_log(void);
 
 /**
  * Copies one last time the buffer into the log file, then
@@ -82,6 +95,8 @@ extern void _clear_buffer(void);
 
 /**
  * Helper function that returns an instance of a time struct.
+ * @return  tm* Struct holding the current datetime informations,
+ *              NULL if any error occurs.
  */
 extern struct tm* _get_local_time(void);
 

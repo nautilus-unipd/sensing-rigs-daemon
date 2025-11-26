@@ -22,8 +22,10 @@
 /**
  * Function that creates and initialise a new daemon process
  * from a parent caller, can be called inside the main function.
+ * @return  int EXIT_FAILURE if any error occurs,
+ *              EXIT_SUCCESS otherwise.
  */
-void daemon_create(void);
+int daemon_create(void);
 
 /**
  * Function that closes all the file descriptors, to avoid leaving

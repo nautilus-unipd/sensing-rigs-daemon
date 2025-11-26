@@ -6,9 +6,13 @@
 
 ## Logger
 
-- [ ] Internal log handling
+- [ ] Optimize internal log error handling
 - [ ] Add log rotation?
 - [ ] Create custom structure to hold last 'N' log entries, instead of using a buffer
+
+## Signal handler
+
+- [ ] Disable/enable image acquiition when SIGHUP is received
 
 ## Source files
 

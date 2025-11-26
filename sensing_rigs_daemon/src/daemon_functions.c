@@ -1,5 +1,3 @@
-// TODO: internal error handling
-
 #include "daemon_functions.h"
 
 void _close_all_fds(void)
@@ -105,14 +103,14 @@ void close_pid_file(void)
     return;
 }
 
-void daemon_create(void)
+int daemon_create(void)
 {
     // Create child process and check for errors
 	pid_t pid = fork();
 	if(pid < 0)
 	{
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
 	}
 	if(pid > 0)
 	{
@@ -123,7 +121,7 @@ void daemon_create(void)
 	if(setsid() < 0)
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     // Modify parent's behaviour to certain signals:
@@ -132,12 +130,12 @@ void daemon_create(void)
 	if(signal(SIGCHLD, SIG_IGN) == SIG_ERR)
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 	if(signal(SIGHUP, SIG_IGN) == SIG_ERR)
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     // Create second child process and check for errors
@@ -145,7 +143,7 @@ void daemon_create(void)
 	if(pid < 0)
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 	if(pid > 0)
     {
@@ -159,20 +157,20 @@ void daemon_create(void)
     if(chdir("/") < 0)
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     // Create runtimes directories
     if((mkdir(DAEMON_PATH, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH)) != 0 && (errno != EEXIST))
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     char* restrict path_log = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_LOG) + 1));
     if(path_log == NULL)
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     strcat(path_log, DAEMON_PATH);
     strcat(path_log, DAEMON_PATH_LOG);
@@ -181,7 +179,7 @@ void daemon_create(void)
         free(path_log);
         path_log = NULL;
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     free(path_log);
     path_log = NULL;
@@ -190,14 +188,15 @@ void daemon_create(void)
     if(check_pid_file())
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     if(!create_pid_file())
     {
         perror(ERR_DAEMON_CREATE);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
+/*
     // Close every open file descriptor
     _close_all_fds();
 
@@ -205,19 +204,25 @@ void daemon_create(void)
     close(STDIN_FILENO);
     dup2(STDIN_FILENO, STDOUT_FILENO);
     dup2(STDIN_FILENO, STDERR_FILENO);
+*/
 
     // Start logging system
-    init_logging();
-    append_log(INFO, MSG_DAEMON_STARTED);
+    if(init_logging() != EXIT_SUCCESS)
+    {
+        return EXIT_FAILURE;
+    }
+    if(append_log(INFO, MSG_DAEMON_STARTED) != EXIT_SUCCESS)
+    {
+        return EXIT_FAILURE;
+    }
 
     // Start signal handler
     if(init_sig_handler() != EXIT_SUCCESS)
     {
         append_log(ERROR, ERR_INIT_SH);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
-
-    return;
+    return EXIT_SUCCESS;
 }
 
 void daemon_terminate(void)

@@ -5,11 +5,18 @@
 
 int main(void)
 {
-    // Initialise daemon
-	daemon_create();
+    // Initialize daemon
+	if(daemon_create() != EXIT_SUCCESS)
+    {
+        daemon_terminate();
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize some variables
+    bool flag_run = true;
+    bool flag_img_acq = true;
 
     // Daemon's main loop
-    bool flag_run = true;
 	while(flag_run)
 	{
         if(block_signals() != EXIT_SUCCESS)
@@ -19,8 +26,10 @@ int main(void)
             daemon_terminate();
             return EXIT_FAILURE;
         }
-        //sleep(5);
-        //flag_run = false;
+        if(flag_img_acq)
+        {
+            sleep(3);
+        }
         if(unblock_signals() != EXIT_SUCCESS)
         {
             append_log(ERROR, ERR_UNBLOCK_SIGNALS);
