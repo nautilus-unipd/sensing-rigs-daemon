@@ -17,6 +17,7 @@
 #include "logger.h"
 #include "messages.h"
 #include "constants.h"
+#include "signal_handler.h"
 
 /**
  * Function that creates and initialise a new daemon process

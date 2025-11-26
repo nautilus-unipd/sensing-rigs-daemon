@@ -2,9 +2,7 @@
 
 ## System
 
-- [ ] Create '*sensing_rigs_daemon.log.d*' directory
 - [ ] Create *systemd .service* file (if needed)
-- [ ] Make the daemon stop if another one is already running
 
 ## Logger
 
@@ -14,7 +12,6 @@
 
 ## Source files
 
-- [ ] Signal handler
 - [ ] Checks:
     - [ ] Under voltage
     - [ ] Cameras integrity

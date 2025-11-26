@@ -198,10 +198,6 @@ void daemon_create(void)
         exit(EXIT_FAILURE);
     }
 
-    // Start logging system
-    init_logging();
-    append_log(INFO, MSG_DAEMON_STARTED);
-
     // Close every open file descriptor
     _close_all_fds();
 
@@ -209,6 +205,18 @@ void daemon_create(void)
     close(STDIN_FILENO);
     dup2(STDIN_FILENO, STDOUT_FILENO);
     dup2(STDIN_FILENO, STDERR_FILENO);
+
+    // Start logging system
+    init_logging();
+    append_log(INFO, MSG_DAEMON_STARTED);
+
+    // Start signal handler
+    if(init_sig_handler() != EXIT_SUCCESS)
+    {
+        append_log(ERROR, ERR_INIT_SH);
+        exit(EXIT_FAILURE);
+    }
+
     return;
 }
 
