@@ -6,6 +6,11 @@
 // Daemon's shared constants.
 
 /**
+ * Path containing the root path of the filesystem.
+ */
+extern const char* restrict ROOT_PATH;
+
+/**
  * Default file to redirect STDOUT and STDERR.
  */
 extern const char* restrict REDIRECT_FILE;
@@ -32,6 +37,18 @@ extern const char* restrict DAEMON_PATH_PID;
 extern const char* restrict BASE_LOG_FILE;
 
 /**
+ * String containing the absolute path for the file holding
+ * the current temperature of the CPU.
+ */
+extern const char* restrict FILE_PATH_TEMP;
+
+/**
+ * String containing the command used to get the current voltage
+ * state of the Raspberry PI 5 board.
+ */
+extern const char* restrict VOLT_COMMAND;
+
+/**
  * Base format for a log entry, takes the form:
  * hh:mm:ss, <level>, <msg>
  */
@@ -52,5 +69,32 @@ extern const uint8_t MAX_BUFF_DIM;
  * Maximum size of a log message.
  */
 extern const uint8_t MAX_MSG_SIZE;
+
+/**
+ * Minimum free disk space required to save 2 images.
+ */
+extern const unsigned long int MIN_FREE_SPACE;
+
+/**
+ * Maximum temperature threshold for the CPU, measured in mC°.
+ */
+extern const uint32_t MAX_TEMP;
+
+/**
+ * Maximum buffer size to hold the results of the voltage checks.
+ */
+extern const uint8_t MAX_VOLT_BUFF_SIZE;
+
+/**
+ * First character of a non undervoltage condition for the Raspberry PI 5,
+ * must come before the second one.
+ */
+extern const char VOLT_CORRECT_1;
+
+/**
+ * Second character of a non undervoltage condition for the Raspberry PI 5,
+ * must follow the first one.
+ */
+extern const char VOLT_CORRECT_2;
 
 #endif //_CONSTANTS_H_

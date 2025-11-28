@@ -1,6 +1,5 @@
 #include "signal_handler.h"
 
-// TODO: SIGHUP should restart?
 //                          1       2       3        6        10       12       14       15       20
 const uint8_t BLCK_SIG[] = {SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGUSR1, SIGUSR2, SIGALRM, SIGTERM, SIGTSTP};
 
@@ -8,6 +7,8 @@ static pthread_mutex_t mutex_mask = PTHREAD_MUTEX_INITIALIZER;
 
 static sigset_t block_mask;
 static sigset_t old_mask;
+
+bool rcvd_sighup = false;
 
 void sig_handler(int signo)
 {
@@ -25,11 +26,7 @@ void sig_handler(int signo)
     }
     else if(signo == SIGHUP)
     {
-        if(append_log(INFO, MSG_RCVD_SIGHUP1) != EXIT_SUCCESS)
-        {
-            daemon_terminate();
-            exit(EXIT_FAILURE);
-        }
+        rcvd_sighup = true;
     }
     return;
 }

@@ -1,4 +1,4 @@
-#include "daemon_functions.h"
+#include "fnct_daemonize.h"
 
 void _close_all_fds(void)
 {
@@ -154,7 +154,7 @@ int daemon_create(void)
     umask(S_IWGRP | S_IWOTH);
 
     // Change current working directory and check for errors
-    if(chdir("/") < 0)
+    if(chdir(ROOT_PATH) < 0)
     {
         perror(ERR_DAEMON_CREATE);
         return EXIT_FAILURE;

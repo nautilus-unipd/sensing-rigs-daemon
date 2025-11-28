@@ -9,7 +9,12 @@
 #include <pthread.h>
 
 #include "logger.h"
-#include "daemon_functions.h"
+#include "fnct_daemonize.h"
+
+/**
+ *
+ */
+extern bool rcvd_sighup;
 
 /**
  * Constant array holding the signals to block.

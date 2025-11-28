@@ -1,5 +1,5 @@
-#ifndef _DAEMON_FUNCTIONS_H_
-#define _DAEMON_FUNCTIONS_H_
+#ifndef _FNCT_DAEMONIZE_H_
+#define _FNCT_DAEMONIZE_H_
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -68,4 +68,4 @@ void close_pid_file(void);
  */
 void daemon_terminate(void);
 
-#endif //_DAEMON_FUNCTIONS_H_
+#endif //_FNCT_DAEMONIZE_H_

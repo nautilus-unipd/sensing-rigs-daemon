@@ -13,6 +13,9 @@ extern const char* restrict ERR_UNBLOCK_SIGNALS;
 extern const char* restrict ERR_RCVD_SIGTERM;
 extern const char* restrict ERR_RCVD_SIGABRT;
 extern const char* restrict ERR_INIT_SH;
+extern const char* restrict ERR_UNDERVOLTAGE;
+extern const char* restrict ERR_OVERHEATING;
+extern const char* restrict ERR_SPACE_FULL;
 
 // --- MESSAGEs ---
 extern const char* restrict MSG_DAEMON_KILLED;

@@ -94,9 +94,21 @@ To easily kill a running daemon:
 kill $(cat /demon/run/sensing_rigs_daemon.pid)
 ```
 
+If the daemon receives a *SIGHUP* it changes its current image acquisition state. Meaning that it will enable/disable it accordingly.
+
+```bash
+kill -SIGHUP $(cat /demon/run/sensing_rigs_daemon.pid)
+```
+
 ---
 
 ## Versions
+
+- **0.2**:
+    - Added health checks on the daemon:
+        - Voltage,
+        - Temperature,
+        - Free disk space.
 
 - **0.1**:
     - Created project files
