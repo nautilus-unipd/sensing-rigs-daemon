@@ -196,7 +196,6 @@ int daemon_create(void)
         return EXIT_FAILURE;
     }
 
-/*
     // Close every open file descriptor
     _close_all_fds();
 
@@ -204,7 +203,6 @@ int daemon_create(void)
     close(STDIN_FILENO);
     dup2(STDIN_FILENO, STDOUT_FILENO);
     dup2(STDIN_FILENO, STDERR_FILENO);
-*/
 
     // Start logging system
     if(init_logging() != EXIT_SUCCESS)
