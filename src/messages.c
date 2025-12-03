@@ -1,0 +1,19 @@
+#include "messages.h"
+
+const char* restrict ERR_MAIN = "[-] Error in 'main()'";
+const char* restrict ERR_DAEMON_CREATE = "[-] Error in 'daemon_create()'";
+const char* restrict ERR_BLOCK_SIGNALS = "Cannot block signals";
+const char* restrict ERR_UNBLOCK_SIGNALS = "Cannot unblock signals";
+const char* restrict ERR_RCVD_SIGTERM = "Received SIGTERM, terminating daemon";
+const char* restrict ERR_RCVD_SIGABRT = "Received SIGABRT, aborting daemon";
+const char* restrict ERR_INIT_SH = "Cannot initialize signal handlers";
+const char* restrict ERR_UNDERVOLTAGE = "Undervoltage detected";
+const char* restrict ERR_OVERHEATING = "Overheating detected";
+const char* restrict ERR_SPACE_FULL = "Not enough free space left";
+const char* restrict ERR_CREATE_THREAD = "Cannot create new thread";
+const char* restrict ERR_CAMERAS = "Cameras not working";
+const char* restrict MSG_DAEMON_STARTED = "Daemon started successfully";
+const char* restrict MSG_DAEMON_KILLED = "Daemon killed successfully\n\n";
+const char* restrict MSG_RCVD_SIGHUP1 = "Received SIGHUP, disabling image acquisition";
+const char* restrict MSG_RCVD_SIGHUP2 = "Received SIGHUP, enabling image acquisition";
+const char* restrict MSG_ALL_GOOD = "Good loop";
