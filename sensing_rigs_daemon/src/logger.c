@@ -37,28 +37,6 @@ void internal_error(void)
     return;
 }
 
-struct tm* _get_local_time(void)
-{
-    time_t* restrict time_raw = (time_t*)malloc(sizeof(time_t));
-    if(time_raw == NULL)
-    {
-        internal_error();
-        return NULL;
-    }
-    *(time_raw) = time(NULL);
-    struct tm* time_local = localtime(time_raw);
-    if(time_local == NULL)
-    {
-        free(time_raw);
-        time_raw = NULL;
-        internal_error();
-        return NULL;
-    }
-    free(time_raw);
-    time_raw = NULL;
-    return time_local;
-}
-
 int init_logging(void)
 {
     pthread_mutex_lock(&mutex_lb);
@@ -102,7 +80,7 @@ int append_log(enum LogLevel_t level, const char* restrict msg)
         internal_error();
         return EXIT_FAILURE;
     }
-    struct tm* time_local = _get_local_time();
+    struct tm* time_local = get_local_time();
     if(time_local == NULL)
     {
         internal_error();
@@ -160,7 +138,7 @@ int write_log(void)
         internal_error();
         return EXIT_FAILURE;
     }
-    struct tm* time_local = _get_local_time();
+    struct tm* time_local = get_local_time();
     if(time_local == NULL)
     {
         internal_error();

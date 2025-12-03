@@ -15,7 +15,7 @@
  * @return  bool    true if there is not enough free space left
  *                  false otherwise
  */
-bool check_space(void);
+extern bool check_space(void);
 
 /**
  * Checks if the CPU temperature exceeds a maximum threshold.

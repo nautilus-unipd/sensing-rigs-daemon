@@ -12,9 +12,10 @@
 #include "fnct_daemonize.h"
 
 /**
- *
+ * Global variable used to signal if a SIGHUP has been
+ * received in the main loop.
  */
-extern bool rcvd_sighup;
+extern volatile bool rcvd_sighup;
 
 /**
  * Constant array holding the signals to block.

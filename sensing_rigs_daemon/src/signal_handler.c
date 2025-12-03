@@ -8,20 +8,20 @@ static pthread_mutex_t mutex_mask = PTHREAD_MUTEX_INITIALIZER;
 static sigset_t block_mask;
 static sigset_t old_mask;
 
-bool rcvd_sighup = false;
+bool volatile rcvd_sighup = false;
 
 void sig_handler(int signo)
 {
     if(signo == SIGTERM)
     {
         append_log(ERROR, ERR_RCVD_SIGTERM);
-        daemon_terminate();
+        daemon_terminate(true);
         exit(EXIT_FAILURE);
     }
     else if(signo == SIGABRT)
     {
         append_log(ERROR, ERR_RCVD_SIGABRT);
-        daemon_terminate();
+        daemon_terminate(true);
         exit(EXIT_FAILURE);
     }
     else if(signo == SIGHUP)

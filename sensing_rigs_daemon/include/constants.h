@@ -31,6 +31,21 @@ extern const char* restrict DAEMON_PATH_LOG;
 extern const char* restrict DAEMON_PATH_PID;
 
 /**
+ * Relative path for the captures, with respect to "DAEMON_PATH"
+ */
+extern const char* restrict DAEMON_PATH_CAP;
+
+/**
+ * Relative path for the captures of the right camera, with respect to "DAEMON_PATH" + "DAEMON_PATH_CAP"
+ */
+extern const char* restrict DAEMON_PATH_RX;
+
+/**
+ * Relative path for the captures of the left camera, with respect to "DAEMON_PATH" + "DAEMON_PATH_CAP"
+ */
+extern const char* restrict DAEMON_PATH_LX;
+
+/**
  * Base format for a log file, takes the form:
  * YYYY-MM-DD.log
  */
@@ -53,6 +68,12 @@ extern const char* restrict VOLT_COMMAND;
  * hh:mm:ss, <level>, <msg>
  */
 extern const char* restrict BASE_LOG_ENTRY;
+
+/**
+ * String containing the format for executing the command
+ * responsible to take a photo.
+ */
+extern const char* restrict PHOTO_SHOOT_COMMAND;
 
 /**
  * Define maximum number of file descriptors to close in case
@@ -96,5 +117,10 @@ extern const char VOLT_CORRECT_1;
  * must follow the first one.
  */
 extern const char VOLT_CORRECT_2;
+
+/**
+ * Maximum size of the string holding the command to take a photo.
+ */
+extern const uint8_t MAX_COMMAND_SIZE;
 
 #endif //_CONSTANTS_H_

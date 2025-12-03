@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "messages.h"
 #include "fnct_check.h"
+#include "fnct_helper.h"
 #include "signal_handler.h"
 #include "fnct_daemonize.h"
 
@@ -9,19 +10,18 @@ int main(void)
     // Initialize daemon
 	if(daemon_create() != EXIT_SUCCESS)
     {
-        daemon_terminate();
+        daemon_terminate(false);
         exit(EXIT_FAILURE);
     }
 
     // Initialize some variables
     bool flag_run = true;
     bool flag_img_acq = true;
-    /*
-    bool flag_undervoltage = false;
-    bool flag_overheating = false;
-    bool flag_space_full = false;
-    // TODO: group these into an unsigned char? (1 bit per flag)
-    */
+    uint8_t cam0 = 0;
+    uint8_t cam1 = 1;
+    //bool flag_undervoltage = false;
+    //bool flag_overheating = false;
+    //bool flag_space_full = false;
 
     // Daemon's main loop
     // Loop description:
@@ -41,47 +41,85 @@ int main(void)
         {
             append_log(ERROR, ERR_BLOCK_SIGNALS);
             flag_run = false;
-            daemon_terminate();
+            daemon_terminate(true);
             return EXIT_FAILURE;
         }
 
-        // TODO: needed only on the Raspberry PI 5
-/*
+/* Disable the checks, since they are supposed to run only on the physical board
         if(check_voltage())
         {
             append_log(ERROR, ERR_UNDERVOLTAGE);
             flag_run = false;
-            daemon_terminate();
+            daemon_terminate(true);
             return EXIT_FAILURE;
         }
-
         if(check_temperature())
         {
             append_log(ERROR, ERR_OVERHEATING);
             flag_run = false;
-            daemon_terminate();
+            daemon_terminate(true);
             return EXIT_FAILURE;
         }
-
         if(check_space())
         {
             append_log(ERROR, ERR_SPACE_FULL);
             flag_run = false;
-            daemon_terminate();
+            daemon_terminate(true);
             return EXIT_FAILURE;
+        }
+*/
+
+/* Disable image acquisition, since it is supposed to run only on the physical board
+        if(flag_img_acq)
+        {
+            pthread_t thread1;
+            pthread_t thread2;
+            int result1;
+            int result2;
+            result1 = pthread_create(&thread1, NULL, shoot, &cam0);
+            if(result1 != 0)
+            {
+                append_log(ERROR, ERR_CREATE_THREAD);
+                flag_run = false;
+                daemon_terminate(true);
+                return EXIT_FAILURE;
+            }
+            result2 = pthread_create(&thread2, NULL, shoot, &cam1);
+            if(result2 != 0)
+            {
+                append_log(ERROR, ERR_CREATE_THREAD);
+                flag_run = false;
+                daemon_terminate(true);
+                return EXIT_FAILURE;
+            }
+            pthread_join(thread1, NULL);
+            pthread_join(thread2, NULL);
+            if(flag_err_cams)
+            {
+                append_log(ERROR, ERR_CAMERAS);
+                flag_run = false;
+                daemon_terminate(true);
+                return EXIT_FAILURE;
+            }
+            else
+            {
+                append_log(DEBUG, MSG_ALL_GOOD);
+            }
+            sleep(5);
         }
 */
 
         if(flag_img_acq)
         {
-            sleep(3);
+            append_log(DEBUG, MSG_ALL_GOOD);
         }
+        sleep(5);
 
         if(unblock_signals() != EXIT_SUCCESS)
         {
             append_log(ERROR, ERR_UNBLOCK_SIGNALS);
             flag_run = false;
-            daemon_terminate();
+            daemon_terminate(true);
             return EXIT_FAILURE;
         }
         if(rcvd_sighup)
@@ -93,7 +131,7 @@ int main(void)
                 if(append_log(INFO, MSG_RCVD_SIGHUP1) != EXIT_SUCCESS)
                 {
                     flag_run = false;
-                    daemon_terminate();
+                    daemon_terminate(true);
                     return EXIT_FAILURE;
                 }
             }
@@ -103,7 +141,7 @@ int main(void)
                 if(append_log(INFO, MSG_RCVD_SIGHUP2) != EXIT_SUCCESS)
                 {
                     flag_run = false;
-                    daemon_terminate();
+                    daemon_terminate(true);
                     return EXIT_FAILURE;
                 }
             }
@@ -111,6 +149,6 @@ int main(void)
 	}
 
     // Terminate daemon
-    daemon_terminate();
+    daemon_terminate(true);
 	return EXIT_SUCCESS;
 }

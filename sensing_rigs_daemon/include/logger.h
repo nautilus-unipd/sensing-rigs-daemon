@@ -1,10 +1,8 @@
 #ifndef _LOGGER_H_
 #define _LOGGER_H_
 
-#include <time.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -13,6 +11,7 @@
 #include <stdbool.h>
 
 #include "constants.h"
+#include "fnct_helper.h"
 
 /**
  * Declare custom type to hold the temporarily buffer
@@ -92,12 +91,5 @@ extern void terminate_logging(void);
  * and its current size.
  */
 extern void _clear_buffer(void);
-
-/**
- * Helper function that returns an instance of a time struct.
- * @return  tm* Struct holding the current datetime informations,
- *              NULL if any error occurs.
- */
-extern struct tm* _get_local_time(void);
 
 #endif //_LOGGER_H_

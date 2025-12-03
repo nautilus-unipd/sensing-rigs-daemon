@@ -1,19 +1,5 @@
 #include "fnct_daemonize.h"
 
-void _close_all_fds(void)
-{
-    int max_fd = sysconf(_SC_OPEN_MAX);
-    if(max_fd == -1)
-    {
-        max_fd = MAX_FDS;
-    }
-    for(int fd = 0; fd < max_fd; fd++)
-    {
-        close(fd);
-    }
-    return;
-}
-
 FILE* open_pid_file(bool flag)
 {
     char* restrict path_pid = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_PID) + 1));
@@ -47,7 +33,7 @@ bool check_pid_file(void)
     char c = fgetc(pid_file);
     fclose(pid_file);
     pid_file = NULL;
-    if((c == EOF) || (c == '\0'))
+    if(c == '\0')
     {
         return false;
     }
@@ -57,7 +43,7 @@ bool check_pid_file(void)
 
 bool create_pid_file(void)
 {
-    FILE* pid_file = open_pid_file(true);
+    FILE* restrict pid_file = open_pid_file(true);
     if(pid_file == NULL)
     {
         return false;
@@ -106,19 +92,19 @@ void close_pid_file(void)
 int daemon_create(void)
 {
     // Create child process and check for errors
-	pid_t pid = fork();
-	if(pid < 0)
-	{
+    pid_t pid = fork();
+    if(pid < 0)
+    {
         perror(ERR_DAEMON_CREATE);
         return EXIT_FAILURE;
-	}
-	if(pid > 0)
-	{
+    }
+    if(pid > 0)
+    {
         _exit(EXIT_SUCCESS);
     }
 
     // Make child the session leader
-	if(setsid() < 0)
+    if(setsid() < 0)
     {
         perror(ERR_DAEMON_CREATE);
         return EXIT_FAILURE;
@@ -127,25 +113,25 @@ int daemon_create(void)
     // Modify parent's behaviour to certain signals:
     // SIGHCHLD     when child process terminates   ->  ignore
     // SIGHUP       when controlling terminal exits ->  ignore
-	if(signal(SIGCHLD, SIG_IGN) == SIG_ERR)
+    if(signal(SIGCHLD, SIG_IGN) == SIG_ERR)
     {
         perror(ERR_DAEMON_CREATE);
         return EXIT_FAILURE;
     }
-	if(signal(SIGHUP, SIG_IGN) == SIG_ERR)
+    if(signal(SIGHUP, SIG_IGN) == SIG_ERR)
     {
         perror(ERR_DAEMON_CREATE);
         return EXIT_FAILURE;
     }
 
     // Create second child process and check for errors
-	pid = fork();
-	if(pid < 0)
+    pid = fork();
+    if(pid < 0)
     {
         perror(ERR_DAEMON_CREATE);
         return EXIT_FAILURE;
     }
-	if(pid > 0)
+    if(pid > 0)
     {
         _exit(EXIT_SUCCESS);
     }
@@ -183,6 +169,67 @@ int daemon_create(void)
     }
     free(path_log);
     path_log = NULL;
+    char* restrict path_img = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_CAP) + 1));
+    if(path_img == NULL)
+    {
+        perror(ERR_DAEMON_CREATE);
+        return EXIT_FAILURE;
+    }
+    strcat(path_img, DAEMON_PATH);
+    strcat(path_img, DAEMON_PATH_CAP);
+    if((mkdir(path_img, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) && (errno != EEXIST))
+    {
+        free(path_img);
+        path_img = NULL;
+        perror(ERR_DAEMON_CREATE);
+        return EXIT_FAILURE;
+    }
+    char* restrict path_img_rx = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_CAP) + strlen(DAEMON_PATH_RX) + 1));
+    if(path_img_rx == NULL)
+    {
+        free(path_img);
+        path_img = NULL;
+        perror(ERR_DAEMON_CREATE);
+        return EXIT_FAILURE;
+    }
+    char* restrict path_img_lx = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_CAP) + strlen(DAEMON_PATH_LX) + 1));
+    if(path_img_lx == NULL)
+    {
+        free(path_img);
+        path_img = NULL;
+        perror(ERR_DAEMON_CREATE);
+        return EXIT_FAILURE;
+    }
+    strcat(path_img_rx, path_img);
+    strcat(path_img_rx, DAEMON_PATH_RX);
+    strcat(path_img_lx, path_img);
+    strcat(path_img_lx, DAEMON_PATH_LX);
+    if((mkdir(path_img_rx, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) && (errno != EEXIST))
+    {
+        free(path_img);
+        path_img = NULL;
+        free(path_img_rx);
+        path_img_rx = NULL;
+        free(path_img_lx);
+        path_img_lx = NULL;
+        perror(ERR_DAEMON_CREATE);
+        return EXIT_FAILURE;
+    }
+    free(path_img_rx);
+    path_img_rx = NULL;
+    if((mkdir(path_img_lx, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0) && (errno != EEXIST))
+    {
+        free(path_img);
+        path_img = NULL;
+        free(path_img_lx);
+        path_img_lx = NULL;
+        perror(ERR_DAEMON_CREATE);
+        return EXIT_FAILURE;
+    }
+    free(path_img_lx);
+    path_img_lx = NULL;
+    free(path_img);
+    path_img = NULL;
 
     // Check for already running instances of this daemon
     if(check_pid_file())
@@ -197,7 +244,7 @@ int daemon_create(void)
     }
 
     // Close every open file descriptor
-    _close_all_fds();
+    close_all_fds();
 
     // Close STDIN and redirect STDOUT and STDERR to default file
     close(STDIN_FILENO);
@@ -223,16 +270,16 @@ int daemon_create(void)
     return EXIT_SUCCESS;
 }
 
-void daemon_terminate(void)
+void daemon_terminate(bool close_pid)
 {
-    // Close PID file
-    close_pid_file();
+    if(close_pid)
+    {
+        close_pid_file();
+    }
 
-    // Terminate logging system
     append_log(INFO, MSG_DAEMON_KILLED);
     terminate_logging();
 
-    // Close every open file descriptor
-    _close_all_fds();
+    close_all_fds();
     return;
 }
