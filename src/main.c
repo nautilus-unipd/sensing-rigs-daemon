@@ -104,7 +104,7 @@ int main(void)
 			{
 				append_log(DEBUG, MSG_ALL_GOOD);
 			}
-			sleep(5);
+			//sleep(10);
 		}
 
 		if(unblock_signals() != EXIT_SUCCESS)

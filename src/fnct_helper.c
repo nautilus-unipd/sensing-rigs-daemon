@@ -50,32 +50,22 @@ void* shoot(void* arg)
 		flag_err_cams = true;
 		return NULL;
 	}
-	struct tm* time_local = get_local_time();
-	if(time_local == NULL)
-	{
-		free(command);
-		command = NULL;
-		flag_err_cams = true;
-		return NULL;
-	}
 	if(cam == 0)
 	{
-		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_RX, time_local->tm_hour, time_local->tm_min, time_local->tm_sec) < 0)
+		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_RX) < 0)
 		{
 			free(command);
 			command = NULL;
-			time_local = NULL;
 			flag_err_cams = true;
 			return NULL;
 		}
 	}
 	else
 	{
-		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_LX, time_local->tm_hour, time_local->tm_min, time_local->tm_sec) < 0)
+		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_LX) < 0)
 		{
 			free(command);
 			command = NULL;
-			time_local = NULL;
 			flag_err_cams = true;
 			return NULL;
 		}
@@ -83,7 +73,6 @@ void* shoot(void* arg)
 	FILE *pipe = popen(command, "r");
 	free(command);
 	command = NULL;
-	time_local = NULL;
 	if(pipe == NULL)
 	{
 		flag_err_cams = true;
