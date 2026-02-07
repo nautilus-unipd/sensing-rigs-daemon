@@ -1,5 +1,5 @@
-#ifndef _FNCT_CHECK_H_
-#define _FNCT_CHECK_H_
+#ifndef _FNCT_RUNTIME_H_
+#define _FNCT_RUNTIME_H_
 
 #include <stdio.h>
 #include <stdint.h>
@@ -32,4 +32,15 @@ extern bool check_temperature(void);
  */
 extern bool check_voltage(void);
 
-#endif //_FNCT_CHECK_H_
+/**
+ * Function that capture a photo from one camera, specified as parameter,
+ * by opening a new pipe. In order to take a synchronized stereo image,
+ * this function must be called in a different thread.
+ * @param	void*	Number of camera to use (0 or 1), must be casted
+ * 			into a "uint8_t" data type.
+ * @return	void*	NULL, but if any error occur the global flag "flag_err_cams"
+ * 			is set to false.
+ */
+extern void* shoot(void*);
+
+#endif //_FNCT_RUNTIME_H_
