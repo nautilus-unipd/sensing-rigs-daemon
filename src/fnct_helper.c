@@ -1,7 +1,5 @@
 #include "fnct_helper.h"
 
-bool volatile flag_err_cams = false;
-
 void close_all_fds(void)
 {
 	int max_fd = sysconf(_SC_OPEN_MAX);
@@ -14,6 +12,16 @@ void close_all_fds(void)
 		close(fd);
 	}
 	return;
+}
+
+FILE* open_file(const char* restrict file_path, const char* restrict mode)
+{
+	FILE* new_fptr = fopen(file_path, mode);
+	if(new_fptr == NULL)
+	{
+		return NULL;
+	}
+	return new_fptr;
 }
 
 struct tm* get_local_time(void)
@@ -34,50 +42,4 @@ struct tm* get_local_time(void)
 	free(time_raw);
 	time_raw = NULL;
 	return time_local;
-}
-
-void* shoot(void* arg)
-{
-	uint8_t cam = *(uint8_t*)arg;
-	if((cam != 0) && (cam != 1))
-	{
-		flag_err_cams = true;
-		return NULL;
-	}
-	char* restrict command = (char*)malloc(sizeof(char) * MAX_COMMAND_SIZE);
-	if(command == NULL)
-	{
-		flag_err_cams = true;
-		return NULL;
-	}
-	if(cam == 0)
-	{
-		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_RX) < 0)
-		{
-			free(command);
-			command = NULL;
-			flag_err_cams = true;
-			return NULL;
-		}
-	}
-	else
-	{
-		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_LX) < 0)
-		{
-			free(command);
-			command = NULL;
-			flag_err_cams = true;
-			return NULL;
-		}
-	}
-	FILE *pipe = popen(command, "r");
-	free(command);
-	command = NULL;
-	if(pipe == NULL)
-	{
-		flag_err_cams = true;
-		return NULL;
-	}
-	pclose(pipe);
-	return NULL;
 }

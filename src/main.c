@@ -1,7 +1,7 @@
 #include "logger.h"
 #include "messages.h"
-#include "fnct_check.h"
 #include "fnct_helper.h"
+#include "fnct_runtime.h"
 #include "signal_handler.h"
 #include "fnct_daemonize.h"
 
@@ -104,7 +104,7 @@ int main(void)
 			{
 				append_log(DEBUG, MSG_ALL_GOOD);
 			}
-			//sleep(10);
+			sleep(5);
 		}
 
 		if(unblock_signals() != EXIT_SUCCESS)

@@ -1,6 +1,6 @@
 #include "fnct_daemonize.h"
 
-FILE* open_pid_file(bool flag)
+FILE* open_pid_file(bool flag_write)
 {
 	char* restrict path_pid = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_PID) + 1));
 	if(path_pid == NULL)
@@ -10,13 +10,13 @@ FILE* open_pid_file(bool flag)
 	strcpy(path_pid, DAEMON_PATH);
 	strcat(path_pid, DAEMON_PATH_PID);
 	FILE* pid_file = NULL;
-	if(flag)
+	if(flag_write)
 	{
-		pid_file = fopen(path_pid, "w");
+		pid_file = open_file(path_pid, FM_W);
 	}
 	else
 	{
-		pid_file = fopen(path_pid, "r");
+		pid_file = open_file(path_pid, FM_R);
 	}
 	free(path_pid);
 	path_pid = NULL;

@@ -158,7 +158,7 @@ int write_log(void)
 	full_path_log = NULL;
 	time_local = NULL;
 	pthread_mutex_lock(&mutex_lf);
-	FILE* restrict log_file = fopen(real_file_log, "a");
+	FILE* log_file = open_file(real_file_log, FM_A);
 	free(real_file_log);
 	real_file_log = NULL;
 	if(log_file == NULL)

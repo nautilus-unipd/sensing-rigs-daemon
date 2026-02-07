@@ -6,6 +6,21 @@
 // Daemon's shared constants.
 
 /**
+ * Constant defining the appending mode for 'fopen()'
+ */
+extern const char* restrict FM_A;
+
+/**
+ * Constant defining the reading mode for 'fopen()'
+ */
+extern const char* restrict FM_R;
+
+/**
+ * Constant defining the writing mode for 'fopen()'
+ */
+extern const char* restrict FM_W;
+
+/**
  * Path containing the root path of the filesystem.
  */
 extern const char* restrict ROOT_PATH;
@@ -76,6 +91,16 @@ extern const char* restrict BASE_LOG_ENTRY;
 extern const char* restrict PHOTO_SHOOT_COMMAND;
 
 /**
+ * Maximum temperature threshold for the CPU, measured in mC°.
+ */
+extern const uint32_t MAX_TEMP;
+
+/**
+ * Minimum free disk space required to save 2 images.
+ */
+extern const uint32_t MIN_FREE_SPACE;
+
+/**
  * Define maximum number of file descriptors to close in case
  * the daemon does not know how many are actually open.
  */
@@ -90,16 +115,6 @@ extern const uint8_t MAX_BUFF_DIM;
  * Maximum size of a log message.
  */
 extern const uint8_t MAX_MSG_SIZE;
-
-/**
- * Minimum free disk space required to save 2 images.
- */
-extern const unsigned long int MIN_FREE_SPACE;
-
-/**
- * Maximum temperature threshold for the CPU, measured in mC°.
- */
-extern const uint32_t MAX_TEMP;
 
 /**
  * Maximum buffer size to hold the results of the voltage checks.

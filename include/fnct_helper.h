@@ -25,21 +25,19 @@ extern volatile bool flag_err_cams;
 extern void close_all_fds();
 
 /**
+ * Function that tries to open a specified file path with the specified mode.
+ * @param	const char*	String containing the file path to open.
+ * @param	const char*	String containint the mode to open the file path.
+ * @return	FILE*	Pointer to a new file stream corresponding to the file path,
+ * 			NULL if any error occurs.
+ */
+extern FILE* open_file(const char*, const char*);
+
+/**
  * Helper function that returns an instance of a time struct.
  * @return  tm* Struct holding the current datetime informations,
  *              NULL if any error occurs.
  */
 extern struct tm* get_local_time(void);
-
-/**
- * Function that capture a photo from one camera, specified as parameter,
- * by opening a new pipe. In order to take a synchronized stereo image,
- * this function must be called in a different thread.
- * @param	void*	Number of camera to use (0 or 1), must be casted
- * 			into a "uint8_t" data type.
- * @return	void*	NULL, but if any error occur the global flag "flag_err_cams"
- * 			is set to false.
- */
-extern void* shoot(void*);
 
 #endif //_FNCT_HELPER_H_
