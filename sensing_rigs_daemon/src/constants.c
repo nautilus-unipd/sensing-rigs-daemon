@@ -28,3 +28,4 @@ const uint8_t MAX_MSG_SIZE = 50;
 const uint8_t MAX_VOLT_BUFF_SIZE = 19;
 const uint8_t MAX_COMMAND_SIZE = 138;
 const uint8_t MAX_LOG_ENTRIES = 5;
+const uint8_t INTERVAL_SHOOT = 3;

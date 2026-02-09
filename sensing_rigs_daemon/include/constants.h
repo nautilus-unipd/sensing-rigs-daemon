@@ -144,4 +144,9 @@ extern const char VOLT_CORRECT_2;
  */
 extern const uint8_t MAX_COMMAND_SIZE;
 
+/**
+ * Interval for the timer sending the signal to capture a stereo image.
+ */
+extern const uint8_t INTERVAL_SHOOT;
+
 #endif //_CONSTANTS_H_

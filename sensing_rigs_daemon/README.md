@@ -105,6 +105,10 @@ kill -SIGHUP $(cat /demon/run/sensing_rigs_daemon.pid)
 
 ## Versions
 
+- **1.0**:
+    - Added custom data structure to hold a certain number of the last log entries, instead of using a buffer.
+    - Added a timer to send a *SIGALRM* every interval of acquisition.
+
 - **0.3**:
     - Added image acquisition (not used by the container).
     - Grouped some helper functions into "*fnct_helper.c*".

@@ -24,6 +24,7 @@ extern const char* restrict MSG_DAEMON_KILLED;
 extern const char* restrict MSG_DAEMON_STARTED;
 extern const char* restrict MSG_RCVD_SIGHUP1;
 extern const char* restrict MSG_RCVD_SIGHUP2;
+extern const char* restrict MSG_RCVD_SIGALRM;
 extern const char* restrict MSG_ALL_GOOD;
 
 #endif //_MESSAGES_H_

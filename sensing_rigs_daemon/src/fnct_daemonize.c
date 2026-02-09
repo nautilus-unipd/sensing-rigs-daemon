@@ -267,6 +267,15 @@ int daemon_create(void)
 		append_log(ERROR, ERR_INIT_SH);
 		return EXIT_FAILURE;
 	}
+
+    // Start timer
+    struct itimerval timer_shoot;
+    timer_shoot.it_value.tv_sec = INTERVAL_SHOOT;
+    timer_shoot.it_value.tv_usec = 0;
+    timer_shoot.it_interval.tv_sec = INTERVAL_SHOOT;
+    timer_shoot.it_interval.tv_usec = 0;
+    setitimer(ITIMER_REAL, &timer_shoot, NULL);
+
 	return EXIT_SUCCESS;
 }
 
@@ -274,10 +283,10 @@ void daemon_terminate(bool close_pid)
 {
 	if(close_pid)
 	{
+        append_log(INFO, MSG_DAEMON_KILLED);
 		close_pid_file();
 	}
 
-	append_log(INFO, MSG_DAEMON_KILLED);
 	terminate_logging();
 
 	close_all_fds();

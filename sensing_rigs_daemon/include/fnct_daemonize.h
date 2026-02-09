@@ -6,10 +6,12 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/file.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

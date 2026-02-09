@@ -16,4 +16,5 @@ const char* restrict MSG_DAEMON_STARTED = "Daemon started successfully";
 const char* restrict MSG_DAEMON_KILLED = "Daemon killed successfully\n\n";
 const char* restrict MSG_RCVD_SIGHUP1 = "Received SIGHUP, disabling image acquisition";
 const char* restrict MSG_RCVD_SIGHUP2 = "Received SIGHUP, enabling image acquisition";
+const char* restrict MSG_RCVD_SIGALRM = "Received SIGALRM, shooting";
 const char* restrict MSG_ALL_GOOD = "Good loop";
