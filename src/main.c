@@ -16,7 +16,6 @@ int main(void)
 
 	// Initialize some variables
 	bool flag_run = true;
-	bool flag_img_acq = true;
 	uint8_t cam0 = 0;
 	uint8_t cam1 = 1;
 	//bool flag_undervoltage = false;
@@ -69,7 +68,7 @@ int main(void)
 			return EXIT_FAILURE;
 		}
 
-		if(flag_img_acq)
+		if(rcvd_sigalrm && flag_img_acq)
 		{
 			pthread_t thread1;
 			pthread_t thread2;
@@ -100,11 +99,6 @@ int main(void)
 				daemon_terminate(true);
 				return EXIT_FAILURE;
 			}
-			else
-			{
-				append_log(DEBUG, MSG_ALL_GOOD);
-			}
-			sleep(5);
 		}
 
 		if(unblock_signals() != EXIT_SUCCESS)
@@ -113,30 +107,6 @@ int main(void)
 			flag_run = false;
 			daemon_terminate(true);
 			return EXIT_FAILURE;
-		}
-		if(rcvd_sighup)
-		{
-			rcvd_sighup = false;
-			if(flag_img_acq)
-			{
-				flag_img_acq = false;
-				if(append_log(INFO, MSG_RCVD_SIGHUP1) != EXIT_SUCCESS)
-				{
-					flag_run = false;
-					daemon_terminate(true);
-					return EXIT_FAILURE;
-				}
-			}
-			else
-			{
-				flag_img_acq = true;
-				if(append_log(INFO, MSG_RCVD_SIGHUP2) != EXIT_SUCCESS)
-				{
-					flag_run = false;
-					daemon_terminate(true);
-					return EXIT_FAILURE;
-				}
-			}
 		}
 	}
 

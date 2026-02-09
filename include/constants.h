@@ -109,7 +109,7 @@ extern const uint16_t MAX_FDS;
 /**
  * Maximum size of the temporarily buffer.
  */
-extern const uint8_t MAX_BUFF_DIM;
+#define MAX_ENTRY_SIZE  65
 
 /**
  * Maximum size of a log message.
@@ -120,6 +120,12 @@ extern const uint8_t MAX_MSG_SIZE;
  * Maximum buffer size to hold the results of the voltage checks.
  */
 extern const uint8_t MAX_VOLT_BUFF_SIZE;
+
+/**
+ * Define the maximum number of log entries to buffer before writing to the
+ * log file.
+ */
+#define MAX_LOG_ENTRIES 5
 
 /**
  * First character of a non undervoltage condition for the Raspberry PI 5,
@@ -137,5 +143,10 @@ extern const char VOLT_CORRECT_2;
  * Maximum size of the string holding the command to take a photo.
  */
 extern const uint8_t MAX_COMMAND_SIZE;
+
+/**
+ * Interval for the timer sending the signal to capture a stereo image.
+ */
+extern const uint8_t INTERVAL_SHOOT;
 
 #endif //_CONSTANTS_H_
