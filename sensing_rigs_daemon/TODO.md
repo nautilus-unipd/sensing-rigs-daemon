@@ -12,4 +12,3 @@
 
 - [ ] Optimize internal log error handling
 - [ ] Add log rotation?
-- [ ] Create custom structure to hold last 'N' log entries, instead of using a buffer

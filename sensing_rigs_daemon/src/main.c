@@ -110,7 +110,8 @@ int main(void)
 			sleep(5);
 		}
 */
-        sleep(5);
+        sleep(3);
+		append_log(DEBUG, MSG_ALL_GOOD);
 
 		if(unblock_signals() != EXIT_SUCCESS)
 		{

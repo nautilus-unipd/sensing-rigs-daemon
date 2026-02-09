@@ -1,13 +1,14 @@
 #include "logger.h"
 
+bool volatile log_active = true;
+uint8_t volatile log_entries = 0;
+
 struct LogBuffer_t
 {
-	bool active;
-	uint8_t size;
-	char* restrict buffer;
+	char msg[MAX_ENTRY_SIZE];
 };
 
-static struct LogBuffer_t log_buffer;
+struct LogBuffer_t log_buffer[MAX_LOG_ENTRIES];
 
 static pthread_mutex_t mutex_lb = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutex_lf = PTHREAD_MUTEX_INITIALIZER;
@@ -15,47 +16,34 @@ static pthread_mutex_t mutex_lf = PTHREAD_MUTEX_INITIALIZER;
 void _clear_buffer(void)
 {
 	pthread_mutex_lock(&mutex_lb);
-	for(uint8_t i = 0; i < MAX_BUFF_DIM; i++)
+	for(uint8_t i = 0; i < MAX_LOG_ENTRIES; i++)
 	{
-		*(log_buffer.buffer + i) = 0;
+        strncpy((log_buffer + i)->msg, "", MAX_ENTRY_SIZE);
 	}
-	log_buffer.size = 0;
+    log_entries = 0;
 	pthread_mutex_unlock(&mutex_lb);
 	return;
 }
 
 void internal_error(void)
 {
-	if(log_buffer.buffer == NULL)
-	{
-		return;
-	}
-	pthread_mutex_lock(&mutex_lb);
-	free(log_buffer.buffer);
-	log_buffer.buffer = NULL;
-	pthread_mutex_unlock(&mutex_lb);
+    terminate_logging();
 	return;
 }
 
 int init_logging(void)
 {
 	pthread_mutex_lock(&mutex_lb);
-	log_buffer.active = true;
-	log_buffer.size = 0;
-	log_buffer.buffer = (char*)calloc(MAX_BUFF_DIM, sizeof(char));
+	log_active = true;
+	log_entries = 0;
 	pthread_mutex_unlock(&mutex_lb);
-	if(log_buffer.buffer == NULL)
-	{
-		internal_error();
-		return EXIT_FAILURE;
-	}
 	return EXIT_SUCCESS;
 }
 
 void disable_logging(void)
 {
 	pthread_mutex_lock(&mutex_lb);
-	log_buffer.active = false;
+	log_active = false;
 	pthread_mutex_unlock(&mutex_lb);
 	return;
 }
@@ -63,18 +51,18 @@ void disable_logging(void)
 void enable_logging(void)
 {
 	pthread_mutex_lock(&mutex_lb);
-	log_buffer.active = true;
+	log_active = true;
 	pthread_mutex_unlock(&mutex_lb);
 	return;
 }
 
 int append_log(enum LogLevel_t level, const char* restrict msg)
 {
-	if((!msg) || (!log_buffer.active) || (strlen(msg) <= 1) || (strlen(msg) > MAX_MSG_SIZE))
+	if((!msg) || (!log_active) || (strlen(msg) <= 1) || (strlen(msg) > MAX_MSG_SIZE))
 	{
 		return EXIT_SUCCESS;
 	}
-	char* restrict real_msg = (char*)calloc(MAX_BUFF_DIM, sizeof(char));
+	char* restrict real_msg = (char*)calloc(MAX_ENTRY_SIZE, sizeof(char));
 	if(real_msg == NULL)
 	{
 		internal_error();
@@ -86,7 +74,7 @@ int append_log(enum LogLevel_t level, const char* restrict msg)
 		internal_error();
 		return EXIT_FAILURE;
 	}
-	if(snprintf(real_msg, MAX_BUFF_DIM, BASE_LOG_ENTRY, time_local->tm_hour, time_local->tm_min, time_local->tm_sec, level, msg) < 0)
+	if(snprintf(real_msg, MAX_ENTRY_SIZE, BASE_LOG_ENTRY, time_local->tm_hour, time_local->tm_min, time_local->tm_sec, level, msg) < 0)
 	{
 		time_local = NULL;
 		free(real_msg);
@@ -94,7 +82,7 @@ int append_log(enum LogLevel_t level, const char* restrict msg)
 		internal_error();
 		return EXIT_FAILURE;
 	}
-	if(log_buffer.size + strlen(real_msg) + 1 > MAX_BUFF_DIM)
+	if((log_entries + 1) >= MAX_LOG_ENTRIES)
 	{
 		if(write_log() != EXIT_SUCCESS)
 		{
@@ -104,7 +92,7 @@ int append_log(enum LogLevel_t level, const char* restrict msg)
 	}
 	time_local = NULL;
 	pthread_mutex_lock(&mutex_lb);
-	if(strncpy(log_buffer.buffer + log_buffer.size, real_msg, strlen(real_msg)) == NULL)
+	if(strncpy((log_buffer + log_entries)->msg, real_msg, strlen(real_msg)) == NULL)
 	{
 		pthread_mutex_unlock(&mutex_lb);
 		free(real_msg);
@@ -112,7 +100,7 @@ int append_log(enum LogLevel_t level, const char* restrict msg)
 		internal_error();
 		return EXIT_FAILURE;
 	}
-	log_buffer.size += strlen(real_msg);
+    log_entries++;
 	pthread_mutex_unlock(&mutex_lb);
 	free(real_msg);
 	real_msg = NULL;
@@ -167,13 +155,16 @@ int write_log(void)
 		internal_error();
 		return EXIT_FAILURE;
 	}
-	if(write(fileno(log_file), log_buffer.buffer, MAX_BUFF_DIM) < 0)
-	{
-		fclose(log_file);
-		log_file = NULL;
-		pthread_mutex_unlock(&mutex_lf);
-		internal_error();
-		return EXIT_FAILURE;
+    for(uint8_t i = 0; i < MAX_LOG_ENTRIES; i++)
+    {
+        if(write(fileno(log_file), (log_buffer + i)->msg, MAX_ENTRY_SIZE) < 0)
+        {
+            fclose(log_file);
+            log_file = NULL;
+            pthread_mutex_unlock(&mutex_lf);
+            internal_error();
+            return EXIT_FAILURE;
+        }
 	}
 	fclose(log_file);
 	log_file = NULL;
@@ -184,15 +175,8 @@ int write_log(void)
 
 void terminate_logging(void)
 {
-	if(write_log() != EXIT_SUCCESS)
-	{
-		internal_error();
-		return;
-	}
+	write_log();
 	disable_logging();
-	pthread_mutex_lock(&mutex_lb);
-	free(log_buffer.buffer);
-	log_buffer.buffer = NULL;
-	pthread_mutex_unlock(&mutex_lb);
+    _clear_buffer();
 	return;
 }
