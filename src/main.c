@@ -70,6 +70,7 @@ int main(void)
 
 		if(rcvd_sigalrm && flag_img_acq)
 		{
+			rcvd_sigalrm = false;
 			pthread_t thread1;
 			pthread_t thread2;
 			int result1;

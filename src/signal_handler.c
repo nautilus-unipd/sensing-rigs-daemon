@@ -27,25 +27,25 @@ void sig_handler(int signo)
 	}
 	else if(signo == SIGHUP)
 	{
-        if(flag_img_acq)
-        {
-            append_log(INFO, MSG_RCVD_SIGHUP1);
-            flag_img_acq = false;
-        }
-        else
-        {
-            append_log(INFO, MSG_RCVD_SIGHUP2);
-            flag_img_acq = true;
-        }
+		if(flag_img_acq)
+		{
+			append_log(INFO, MSG_RCVD_SIGHUP1);
+			flag_img_acq = false;
+		}
+		else
+		{
+			append_log(INFO, MSG_RCVD_SIGHUP2);
+			flag_img_acq = true;
+		}
 	}
-    else if(signo == SIGALRM)
-    {
-        if(flag_img_acq)
-        {
-            append_log(INFO, MSG_RCVD_SIGALRM);
-            rcvd_sigalrm = true;
-        }
-    }
+	else if(signo == SIGALRM)
+	{
+		if(flag_img_acq)
+		{
+			append_log(INFO, MSG_RCVD_SIGALRM);
+			rcvd_sigalrm = true;
+		}
+	}
 	return;
 }
 
