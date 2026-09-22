@@ -35,13 +35,28 @@ extern bool check_temperature(void);
 extern bool check_voltage(void);
 
 /**
- * Function that capture a photo from one camera, specified as parameter,
- * by opening a new pipe. In order to take a synchronized stereo image,
- * this function must be called in a different thread.
- * @param	void*	Number of camera to use (0 or 1), must be casted
- * 			into a "uint8_t" data type.
- * @return	void*	NULL, but if any error occur the global flag "flag_err_cams"
- * 			is set to false.
+ * Starts the persistent rpicam-still processes for both cameras in signal mode (-s).
+ * @return int EXIT_SUCCESS on success, EXIT_FAILURE otherwise.
+ */
+extern int start_camera_processes(void);
+
+/**
+ * Terminates the persistent camera processes cleanly.
+ */
+extern void stop_camera_processes(void);
+
+/**
+ * Triggers an instant capture on camera cam (0 or 1) by sending SIGUSR1.
+ * @param cam Camera index (0 or 1).
+ * @return int EXIT_SUCCESS on success, EXIT_FAILURE otherwise.
+ */
+extern int trigger_camera(uint8_t cam);
+
+/**
+ * Function that captures a photo from one camera, specified as parameter,
+ * by triggering the persistent camera process via SIGUSR1.
+ * @param	void*	Number of camera to use (0 or 1), casted to "uint8_t".
+ * @return	void*	NULL, sets FLAG_ERR_CAMS on error.
  */
 extern void* shoot(void*);
 

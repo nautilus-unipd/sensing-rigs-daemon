@@ -233,7 +233,7 @@ extern const char VOLT_CORRECT_2;
 /**
  * Maximum size of the string holding the command to take a photo.
  */
-extern const uint8_t MAX_COMMAND_SIZE;
+extern const uint16_t MAX_COMMAND_SIZE;
 
 /* =============== END DAEMON'S SHARED CONSTANTS =============== */
 

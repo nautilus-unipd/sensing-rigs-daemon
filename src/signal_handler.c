@@ -39,7 +39,6 @@ void sig_handler(int signo)
     {
         if(IS_FLAG(FLAG_IMG_ACQ))
         {
-            append_log(INFO, MSG_RCVD_SIGALRM);
             SET_FLAG(FLAG_RCVD_SIGALRM);
         }
     }

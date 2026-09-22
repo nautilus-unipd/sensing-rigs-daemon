@@ -1,9 +1,9 @@
 #include "fnct_daemonize.h"
 
-FILE* open_pid_file(bool flag_write)
+FILE *open_pid_file(bool flag_write)
 {
-    char* restrict path_pid = (char*)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_PID) + 1));
-    if(path_pid == NULL)
+    char *restrict path_pid = (char *)malloc(sizeof(char) * (strlen(DAEMON_PATH) + strlen(DAEMON_PATH_PID) + 1));
+    if (path_pid == NULL)
     {
         return NULL;
     }
@@ -12,9 +12,9 @@ FILE* open_pid_file(bool flag_write)
     strcpy(path_pid, DAEMON_PATH);
     strcat(path_pid, DAEMON_PATH_PID);
 
-    FILE* pid_file = NULL;
+    FILE *pid_file = NULL;
 
-    if(flag_write)
+    if (flag_write)
     {
         pid_file = open_file(path_pid, FM_W);
     }
@@ -29,7 +29,6 @@ FILE* open_pid_file(bool flag_write)
     return pid_file;
 }
 
-
 /*
  * SYSTEMD-COMPATIBLE VERSION:
  * - PID file NON viene usato per bloccare l’avvio
@@ -37,9 +36,9 @@ FILE* open_pid_file(bool flag_write)
  */
 bool check_pid_file(void)
 {
-    FILE* restrict pid_file = open_pid_file(false);
+    FILE *restrict pid_file = open_pid_file(false);
 
-    if(pid_file == NULL)
+    if (pid_file == NULL)
     {
         return false;
     }
@@ -52,7 +51,7 @@ bool check_pid_file(void)
      * FIX CRITICO:
      * se file esiste ma è vuoto o corrotto NON bloccare il daemon
      */
-    if(c == EOF || c == '\0')
+    if (c == EOF || c == '\0')
     {
         return false;
     }
@@ -64,12 +63,11 @@ bool check_pid_file(void)
     return false;
 }
 
-
 bool create_pid_file(void)
 {
-    FILE* restrict pid_file = open_pid_file(true);
+    FILE *restrict pid_file = open_pid_file(true);
 
-    if(pid_file == NULL)
+    if (pid_file == NULL)
     {
         return false;
     }
@@ -78,7 +76,7 @@ bool create_pid_file(void)
      * FIX IMPORTANTE:
      * scrittura PID ma senza logica di locking (systemd gestisce concorrenza)
      */
-    if(fprintf(pid_file, "%d", getpid()) <= 0)
+    if (fprintf(pid_file, "%d", getpid()) <= 0)
     {
         fclose(pid_file);
         pid_file = NULL;
@@ -93,7 +91,6 @@ bool create_pid_file(void)
     return true;
 }
 
-
 /*
  * SAFE CLEANUP:
  * - non tenta di fare unlock (inutile senza locking reale)
@@ -101,9 +98,9 @@ bool create_pid_file(void)
  */
 void close_pid_file(void)
 {
-    FILE* restrict pid_file = open_pid_file(true);
+    FILE *restrict pid_file = open_pid_file(true);
 
-    if(pid_file == NULL)
+    if (pid_file == NULL)
     {
         return;
     }
@@ -123,7 +120,6 @@ void close_pid_file(void)
     fclose(pid_file);
     pid_file = NULL;
 }
-
 
 /*
  * MAIN DAEMON INIT (SYSTEMD VERSION)
@@ -204,29 +200,45 @@ int daemon_create(void)
     }
 
     // =========================
-    // 4. TIMER SETUP
+    // 4. CAMERA PROCESSES INIT (OPTION A: SIGNAL MODE)
+    // =========================
+
+    if (start_camera_processes() != EXIT_SUCCESS)
+    {
+        append_log(ERROR, ERR_CAMERAS);
+        return EXIT_FAILURE;
+    }
+
+    // =========================
+    // 5. TIMER SETUP (5 FPS = 200 ms interval)
     // =========================
 
     struct itimerval timer_shoot;
 
-    timer_shoot.it_value.tv_sec = INTERVAL_SHOOT;
-    timer_shoot.it_value.tv_usec = 0;
+    // Configurazione timer per acquisizione rapida a 5 FPS
+    // 1 secondo / 5 scatti = 0.2 secondi di intervallo
+    // => tv_sec = 0 e tv_usec = 200.000
 
-    timer_shoot.it_interval.tv_sec = INTERVAL_SHOOT;
-    timer_shoot.it_interval.tv_usec = 0;
+    timer_shoot.it_value.tv_sec = 0;
+    timer_shoot.it_value.tv_usec = 200000;
+
+    timer_shoot.it_interval.tv_sec = 0;
+    timer_shoot.it_interval.tv_usec = 200000;
 
     setitimer(ITIMER_REAL, &timer_shoot, NULL);
 
     return EXIT_SUCCESS;
 }
 
-
 /*
  * CLEAN EXIT (SYSTEMD SAFE)
  */
 void daemon_terminate(bool close_pid)
 {
-    if(close_pid)
+    // Cleanly stop persistent camera processes first
+    stop_camera_processes();
+
+    if (close_pid)
     {
         append_log(INFO, MSG_DAEMON_KILLED);
         close_pid_file();
@@ -238,3 +250,4 @@ void daemon_terminate(bool close_pid)
 
     return;
 }
+
