@@ -2,22 +2,16 @@
 #define _LOGGER_H_
 
 #include <stdio.h>
-#include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
 
 #include "constants.h"
 #include "fnct_helper.h"
 
-/**
- * Declare custom type to hold the temporarily buffer
- * and its actual size. 
- */
-struct LogBuffer_t;
+#define LOG_FILENAME_MAX 256
 
 /**
  * Defines custom enumeration to represent different
@@ -33,29 +27,23 @@ enum LogLevel_t
 };
 
 /**
- * Performs some cleanup actions when an internal error occurs
- * in the logging system.
- */
-extern void internal_error(void);
-
-/**
  * Initializes the logging system. Does not open the actual 
  * log file, but initializes the buffer that will temporarily
  * hold some log messages.
  * @return  int EXIT_FAILURE if any error occurs,
  *              EXIT_SUCCESS otherwise.
  */
-extern int init_logging(void);
+int init_logging(void);
 
 /**
  * Disables all logging messages.
  */
-extern void disable_logging(void);
+void disable_logging(void);
 
 /**
  * Enables all logging messages.
  */
-extern void enable_logging(void);
+void enable_logging(void);
 
 /**
  * Appends a new log message to a buffer before writing to
@@ -68,10 +56,10 @@ extern void enable_logging(void);
  * @return  int EXIT_FAILURE if any error occurs,
  *              EXIT_SUCCESS otherwise.
  */
-extern int append_log(enum LogLevel_t, const char* restrict);
+int append_log(enum LogLevel_t level, const char* restrict msg);
 
 /**
- * Opens the actul log file, which path is a constant, and
+ * Opens the actual log file, which path is a constant, and
  * copies the content of the temporarily buffer to it.
  * After this operation the buffer is freed and the log
  * file descriptor is closed.
@@ -86,10 +74,4 @@ extern int write_log(void);
  */
 extern void terminate_logging(void);
 
-/**
- * Helper function that sets to 0 the temporarily log buffer
- * and its current size.
- */
-extern void _clear_buffer(void);
-
-#endif //_LOGGER_H_
+#endif

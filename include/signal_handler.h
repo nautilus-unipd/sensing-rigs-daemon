@@ -12,18 +12,6 @@
 #include "fnct_daemonize.h"
 
 /**
- * Global variable used to stop acquiring stereo images,
- * changes value when receives a SIGHUP.
- */
-extern volatile bool flag_img_acq;
-
-/**
- * Global variable used to signal if a SIGALRM has been
- * received in the main loop.
- */
-extern volatile bool rcvd_sigalrm;
-
-/**
  * Constant array holding the signals to block.
  */
 extern const uint8_t BLCK_SIG[];

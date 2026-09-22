@@ -9,6 +9,8 @@
 
 #include "constants.h"
 
+void init_seq_counters(void);
+
 /**
  * Checks if the remaining free space is enough to store 2 new
  * images.

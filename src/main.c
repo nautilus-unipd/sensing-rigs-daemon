@@ -15,12 +15,10 @@ int main(void)
 	}
 
 	// Initialize some variables
-	bool flag_run = true;
+	init_daemon_flags();
+
 	uint8_t cam0 = 0;
 	uint8_t cam1 = 1;
-	//bool flag_undervoltage = false;
-	//bool flag_overheating = false;
-	//bool flag_space_full = false;
 
 	// Daemon's main loop
 	// Loop description:
@@ -34,12 +32,12 @@ int main(void)
 	//   8) Sava images
 	//   9) Unblock signals and handle the received ones, if any
 	//  10) Repeat
-	while(flag_run)
+	while(IS_FLAG(FLAG_RUN))
 	{
 		if(block_signals() != EXIT_SUCCESS)
 		{
 			append_log(ERROR, ERR_BLOCK_SIGNALS);
-			flag_run = false;
+			CLEAR_FLAG(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
@@ -47,7 +45,7 @@ int main(void)
 		if(check_voltage())
 		{
 			append_log(ERROR, ERR_UNDERVOLTAGE);
-			flag_run = false;
+			CLEAR_FLAG(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
@@ -55,7 +53,7 @@ int main(void)
 		if(check_temperature())
 		{
 			append_log(ERROR, ERR_OVERHEATING);
-			flag_run = false;
+			CLEAR_FLAG(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
@@ -63,55 +61,57 @@ int main(void)
 		if(check_space())
 		{
 			append_log(ERROR, ERR_SPACE_FULL);
-			flag_run = false;
+			CLEAR_FLAG(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
-		}
-
-		if(rcvd_sigalrm && flag_img_acq)
-		{
-			rcvd_sigalrm = false;
-			pthread_t thread1;
-			pthread_t thread2;
-			int result1;
-			int result2;
-			result1 = pthread_create(&thread1, NULL, shoot, &cam0);
-			if(result1 != 0)
-			{
-				append_log(ERROR, ERR_CREATE_THREAD);
-				flag_run = false;
-				daemon_terminate(true);
-				return EXIT_FAILURE;
-			}
-			result2 = pthread_create(&thread2, NULL, shoot, &cam1);
-			if(result2 != 0)
-			{
-				append_log(ERROR, ERR_CREATE_THREAD);
-				flag_run = false;
-				daemon_terminate(true);
-				return EXIT_FAILURE;
-			}
-			pthread_join(thread1, NULL);
-			pthread_join(thread2, NULL);
-			if(flag_err_cams)
-			{
-				append_log(ERROR, ERR_CAMERAS);
-				flag_run = false;
-				daemon_terminate(true);
-				return EXIT_FAILURE;
-			}
 		}
 
 		if(unblock_signals() != EXIT_SUCCESS)
 		{
 			append_log(ERROR, ERR_UNBLOCK_SIGNALS);
-			flag_run = false;
+			CLEAR_FLAG(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
-	}
 
-	// Terminate daemon
-	daemon_terminate(true);
-	return EXIT_SUCCESS;
+        if ((IS_FLAG(FLAG_RCVD_SIGALRM) && IS_FLAG(FLAG_IMG_ACQ)))
+        {
+            pthread_t thread1;
+            pthread_t thread2;
+            int result1;
+            int result2;
+            result1 = pthread_create(&thread1, NULL, shoot, &cam0);
+            if(result1 != 0)
+            {
+                append_log(ERROR, ERR_CREATE_THREAD);
+                CLEAR_FLAG(FLAG_RUN);
+                daemon_terminate(true);
+                return EXIT_FAILURE;
+            }
+            result2 = pthread_create(&thread2, NULL, shoot, &cam1);
+            if(result2 != 0)
+            {
+                append_log(ERROR, ERR_CREATE_THREAD);
+                CLEAR_FLAG(FLAG_RUN);
+                daemon_terminate(true);
+                return EXIT_FAILURE;
+            }
+            pthread_join(thread1, NULL);
+            pthread_join(thread2, NULL);
+            CLEAR_FLAG(FLAG_RCVD_SIGALRM);
+			
+            if(IS_FLAG(FLAG_ERR_CAMS))
+            {
+                append_log(ERROR, ERR_CAMERAS);
+                CLEAR_FLAG(FLAG_RUN);
+                daemon_terminate(true);
+                return EXIT_FAILURE;
+            }
+
+        }
+    }
+
+    // Terminate daemon
+    daemon_terminate(true);
+    return EXIT_SUCCESS;
 }

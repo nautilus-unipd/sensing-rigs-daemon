@@ -1,5 +1,12 @@
 #include "fnct_helper.h"
 
+void init_daemon_flags(void)
+{
+    SET_FLAG(FLAG_LOG_ACTIVE);
+    SET_FLAG(FLAG_RUN);
+    SET_FLAG(FLAG_IMG_ACQ);
+}
+
 void close_all_fds(void)
 {
 	int max_fd = sysconf(_SC_OPEN_MAX);
