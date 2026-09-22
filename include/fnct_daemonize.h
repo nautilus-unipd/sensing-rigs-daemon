@@ -20,7 +20,7 @@
 #include "constants.h"
 #include "fnct_helper.h"
 #include "signal_handler.h"
-
+#include "fnct_runtime.h"
 /**
  * Function that creates and initialise a new daemon process
  * from a parent caller, can be called inside the main function.
