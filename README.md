@@ -106,6 +106,7 @@ kill -SIGHUP $(cat /demon/run/sensing_rigs_daemon.pid)
 ## Versions
 
 - **1.2**:
+    - The daemon is now a system daemon.
     - Grouped flags into 1 shared variable ("*uint8_t*") for better flag checking.
     - Moved all constant definition from "*const*" to a macro definition.
 
@@ -140,6 +141,6 @@ Software developed by:
 
 - Pasetto Niccolò
 
-- Zigiotto Giulio
+- Zanardi Giulio
 
 ---
