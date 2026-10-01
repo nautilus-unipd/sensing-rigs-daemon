@@ -9,15 +9,11 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static char log_buffer[MAX_LOG_ENTRIES][MAX_ENTRY_SIZE];
 static uint16_t log_entries = 0;
 
-// INTERNAL SAFE HELPERS
-
 static struct tm* get_time_safe(void)
 {
     time_t now = time(NULL);
     return localtime(&now);
 }
-
-// BUFFER MANAGEMENT
 
 static void _clear_buffer(void)
 {
@@ -26,8 +22,6 @@ static void _clear_buffer(void)
 
     log_entries = 0;
 }
-
-// INIT / CONTROL
 
 int init_logging(void)
 {
@@ -53,8 +47,6 @@ void enable_logging(void)
     pthread_mutex_unlock(&mutex);
 }
 
-// ROTATION (DAILY)
-
 static void build_log_filename(char* out, size_t size)
 {
     struct tm* t = get_time_safe();
@@ -67,8 +59,6 @@ static void build_log_filename(char* out, size_t size)
              t->tm_mon + 1,
              t->tm_mday);
 }
-
-// APPEND LOG
 
 int append_log(enum LogLevel_t level, const char* restrict msg)
 {
@@ -111,8 +101,6 @@ int append_log(enum LogLevel_t level, const char* restrict msg)
     return EXIT_SUCCESS;
 }
 
-// WRITE LOG (ROTATION)
-
 int write_log(void)
 {
     char filename[LOG_FILENAME_MAX];
@@ -145,8 +133,6 @@ int write_log(void)
 
     return EXIT_SUCCESS;
 }
-
-// TERMINATION
 
 void terminate_logging(void)
 {
