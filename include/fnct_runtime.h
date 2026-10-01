@@ -1,13 +1,19 @@
 #ifndef _FNCT_RUNTIME_H_
 #define _FNCT_RUNTIME_H_
 
+#include <time.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <string.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <sys/statvfs.h>
 
 #include "constants.h"
+
+void init_seq_counters(void);
 
 /**
  * Checks if the remaining free space is enough to store 2 new

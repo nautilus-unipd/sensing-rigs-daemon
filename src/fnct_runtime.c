@@ -1,6 +1,45 @@
 #include "fnct_runtime.h"
 
-bool volatile flag_err_cams = false;
+static unsigned long   g_seq[2] = {0, 0};
+static pthread_mutex_t seq_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static unsigned long highest_seq_in(const char* dir)
+{
+    DIR* d = opendir(dir);
+    if(d == NULL)
+    {
+        return 0;
+    }
+
+    unsigned long hi = 0;
+    struct dirent* e;
+    while((e = readdir(d)) != NULL)
+    {
+        char* endp = NULL;
+        unsigned long v = strtoul(e->d_name, &endp, 10);
+        if(endp != e->d_name && (*endp == '_' || *endp == '.'))
+        {
+            if(v > hi)
+            {
+                hi = v;
+            }
+        }
+    }
+
+    closedir(d);
+    return hi;
+}
+
+void init_seq_counters(void)
+{
+    char dir[512];
+
+    snprintf(dir, sizeof(dir), "%s%s%s", DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_RX);
+    g_seq[0] = highest_seq_in(dir) + 1;
+
+    snprintf(dir, sizeof(dir), "%s%s%s", DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_LX);
+    g_seq[1] = highest_seq_in(dir) + 1;
+}
 
 bool check_space(void)
 {
@@ -72,46 +111,47 @@ bool check_voltage(void)
 
 void* shoot(void* arg)
 {
-	uint8_t cam = *(uint8_t*)arg;
-	if((cam != 0) && (cam != 1))
-	{
-		flag_err_cams = true;
-		return NULL;
-	}
-	char* restrict command = (char*)malloc(sizeof(char) * MAX_COMMAND_SIZE);
-	if(command == NULL)
-	{
-		flag_err_cams = true;
-		return NULL;
-	}
-	if(cam == 0)
-	{
-		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_RX) < 0)
-		{
-			free(command);
-			command = NULL;
-			flag_err_cams = true;
-			return NULL;
-		}
-	}
-	else
-	{
-		if(snprintf(command, MAX_COMMAND_SIZE, PHOTO_SHOOT_COMMAND, cam, DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_LX) < 0)
-		{
-			free(command);
-			command = NULL;
-			flag_err_cams = true;
-			return NULL;
-		}
-	}
-	FILE *pipe = popen(command, "r");
-	free(command);
-	command = NULL;
-	if(pipe == NULL)
-	{
-		flag_err_cams = true;
-		return NULL;
-	}
-	pclose(pipe);
-	return NULL;
+    uint8_t cam = *(uint8_t*)arg;
+    if((cam != 0) && (cam != 1))
+    {
+        SET_FLAG(FLAG_ERR_CAMS);
+        return NULL;
+    }
+
+    const char* subdir = (cam == 0) ? DAEMON_PATH_RX : DAEMON_PATH_LX;
+
+    pthread_mutex_lock(&seq_lock);
+    unsigned long seq = g_seq[cam]++;
+    pthread_mutex_unlock(&seq_lock);
+
+    char out_path[512];
+    snprintf(out_path, sizeof(out_path), "%s%s%s%06lu_%ld.jpg", DAEMON_PATH, DAEMON_PATH_CAP, subdir, seq, (long)time(NULL));
+
+    size_t cmd_size = strlen(PHOTO_SHOOT_COMMAND) + strlen(out_path) + 16;
+    char* restrict command = (char*)malloc(cmd_size);
+    if(command == NULL)
+    {
+        SET_FLAG(FLAG_ERR_CAMS);
+        return NULL;
+    }
+
+    if(snprintf(command, cmd_size, PHOTO_SHOOT_COMMAND, cam, out_path) < 0)
+    {
+        free(command);
+        command = NULL;
+        SET_FLAG(FLAG_ERR_CAMS);
+        return NULL;
+    }
+
+    FILE* pipe = popen(command, "r");
+    free(command);
+    command = NULL;
+    if(pipe == NULL)
+    {
+        SET_FLAG(FLAG_ERR_CAMS);
+        return NULL;
+    }
+
+    pclose(pipe);
+    return NULL;
 }
