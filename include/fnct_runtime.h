@@ -1,9 +1,13 @@
 #ifndef _FNCT_RUNTIME_H_
 #define _FNCT_RUNTIME_H_
 
+#include <time.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <string.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <sys/statvfs.h>
 
