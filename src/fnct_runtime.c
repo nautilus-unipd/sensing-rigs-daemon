@@ -1,14 +1,5 @@
 #include "fnct_runtime.h"
 
-/* fnct_runtime.h pulls in constants.h (DAEMON_PATH*, MAX_COMMAND_SIZE,
- * SET_FLAG / FLAG_ERR_CAMS, ROOT_PATH, thresholds, ...). The headers below are
- * additionally required by the new sequence-counter code and are NOT included
- * by fnct_runtime.h, so we include them here. */
-#include <time.h>       /* time()                       */
-#include <dirent.h>     /* opendir / readdir / closedir */
-#include <pthread.h>    /* pthread_mutex_*              */
-#include <string.h>     /* strlen                       */
-
 /* ============================================================================
  *  Capture command
  *  ---------------------------------------------------------------------------
@@ -31,21 +22,9 @@
 //const char* const PHOTO_SHOOT_COMMAND =
 //    "rpicam-still -v 0 --zsl --width 1920 --height 1080 --camera %d --immediate -o %s";
 
-
-/* ============================================================================
- *  Per-camera capture sequence counters
- *  ---------------------------------------------------------------------------
- *  g_seq[0] -> camera 0 -> rx directory
- *  g_seq[1] -> camera 1 -> lx directory
- *  Seeded once at startup from the highest file already on disk, so the count
- *  survives restarts and never resets. Guarded by a mutex because the two
- *  cameras are shot from separate threads.
- * ==========================================================================*/
 static unsigned long   g_seq[2] = {0, 0};
 static pthread_mutex_t seq_lock = PTHREAD_MUTEX_INITIALIZER;
 
-/* Highest leading number among files named "NNN_...".jpg or "NNN.jpg" in dir.
- * Returns 0 if the directory is empty or cannot be opened. */
 static unsigned long highest_seq_in(const char* dir)
 {
     DIR* d = opendir(dir);
@@ -60,7 +39,6 @@ static unsigned long highest_seq_in(const char* dir)
     {
         char* endp = NULL;
         unsigned long v = strtoul(e->d_name, &endp, 10);
-        /* accept only "<digits>_..." or "<digits>." (our naming schemes) */
         if(endp != e->d_name && (*endp == '_' || *endp == '.'))
         {
             if(v > hi)
@@ -87,10 +65,6 @@ void init_seq_counters(void)
     g_seq[1] = highest_seq_in(dir) + 1;
 }
 
-
-/* ============================================================================
- *  Health checks (unchanged)
- * ==========================================================================*/
 bool check_space(void)
 {
     struct statvfs stat;
@@ -159,18 +133,6 @@ bool check_voltage(void)
     return false;
 }
 
-
-/* ============================================================================
- *  shoot() — capture one frame from `cam` into its directory.
- *  ---------------------------------------------------------------------------
- *  Filename is "NNNNNN_<unixts>.jpg" (sequence first -> ordering is correct
- *  regardless of the clock; the timestamp is kept only for display).
- *
- *  Error handling is IDENTICAL to the original: FLAG_ERR_CAMS is set only on a
- *  bad camera argument, an allocation/format failure, or popen() returning
- *  NULL. The exit status of rpicam-still is NOT treated as an error (just like
- *  before) — so a non-zero/benign exit code can never kill the daemon.
- * ==========================================================================*/
 void* shoot(void* arg)
 {
     uint8_t cam = *(uint8_t*)arg;
@@ -182,20 +144,13 @@ void* shoot(void* arg)
 
     const char* subdir = (cam == 0) ? DAEMON_PATH_RX : DAEMON_PATH_LX;
 
-    /* next sequence number for this camera */
     pthread_mutex_lock(&seq_lock);
     unsigned long seq = g_seq[cam]++;
     pthread_mutex_unlock(&seq_lock);
 
-    /* full output path: <captures>/<rx|lx>/NNNNNN_<unixts>.jpg */
     char out_path[512];
-    snprintf(out_path, sizeof(out_path), "%s%s%s%06lu_%ld.jpg",
-             DAEMON_PATH, DAEMON_PATH_CAP, subdir, seq, (long)time(NULL));
+    snprintf(out_path, sizeof(out_path), "%s%s%s%06lu_%ld.jpg", DAEMON_PATH, DAEMON_PATH_CAP, subdir, seq, (long)time(NULL));
 
-    /* build the rpicam-still command: (camera, output path).
-     * Size the buffer to the actual content so the full path (filename +
-     * ".jpg") can never be truncated. The old fixed MAX_COMMAND_SIZE was too
-     * small once the filename moved into the -o path. */
     size_t cmd_size = strlen(PHOTO_SHOOT_COMMAND) + strlen(out_path) + 16;
     char* restrict command = (char*)malloc(cmd_size);
     if(command == NULL)
@@ -221,7 +176,6 @@ void* shoot(void* arg)
         return NULL;
     }
 
-    pclose(pipe);   /* blocks until the capture finishes; status ignored, as before */
-
+    pclose(pipe);
     return NULL;
 }
