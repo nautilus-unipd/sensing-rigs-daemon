@@ -1,27 +1,5 @@
 #include "fnct_runtime.h"
 
-/* ============================================================================
- *  Capture command
- *  ---------------------------------------------------------------------------
- *  Only TWO changes vs your original (working) command:
- *      - "--timestamp" REMOVED: we now put the filename in the -o path ourselves
- *        (sequence + timestamp), so ordering no longer depends on the clock.
- *      - "-o %s%s%s" (a directory prefix) became "-o %s" (the full file path we
- *        build in shoot()).
- *  Everything else (-v 0, --zsl, resolution, --immediate) is unchanged, so the
- *  capture behaves exactly as before.
- *
- *  Format arguments: (int camera, const char* full_output_path)  -> TWO of them.
- *
- *  IMPORTANT — keep exactly ONE definition of PHOTO_SHOOT_COMMAND in the whole
- *  project, and make sure the string in effect has exactly TWO specifiers
- *  (%d and %s). If it is defined in constants.c, put the NEW string THERE and
- *  DELETE this block (two definitions = duplicate-symbol link error). If it
- *  lived at the top of this file, keep it here.
- * ==========================================================================*/
-//const char* const PHOTO_SHOOT_COMMAND =
-//    "rpicam-still -v 0 --zsl --width 1920 --height 1080 --camera %d --immediate -o %s";
-
 static unsigned long   g_seq[2] = {0, 0};
 static pthread_mutex_t seq_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -52,8 +30,6 @@ static unsigned long highest_seq_in(const char* dir)
     return hi;
 }
 
-/* Call ONCE at startup, AFTER the capture directories have been created
- * (e.g. at the end of daemon_create(), just before arming the timer). */
 void init_seq_counters(void)
 {
     char dir[512];
