@@ -15,15 +15,12 @@ int main(void)
 	}
 
 	// Initialize some variables
-	bool flag_run = true;
+	init_daemon_flags();
 
-/* Unused since this is a development version
+    /* Unused since development version
 	uint8_t cam0 = 0;
 	uint8_t cam1 = 1;
-*/
-	//bool flag_undervoltage = false;
-	//bool flag_overheating = false;
-	//bool flag_space_full = false;
+    */
 
 	// Daemon's main loop
 	// Loop description:
@@ -37,21 +34,21 @@ int main(void)
 	//   8) Sava images
 	//   9) Unblock signals and handle the received ones, if any
 	//  10) Repeat
-	while(flag_run)
+	while(is_flag(FLAG_RUN))
 	{
 		if(block_signals() != EXIT_SUCCESS)
 		{
 			append_log(ERROR, ERR_BLOCK_SIGNALS);
-			flag_run = false;
+			clear_flag(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
 
-/* Unused since this is a development version
+        /* Unused since development version
 		if(check_voltage())
 		{
 			append_log(ERROR, ERR_UNDERVOLTAGE);
-			flag_run = false;
+			clear_flag(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
@@ -59,7 +56,7 @@ int main(void)
 		if(check_temperature())
 		{
 			append_log(ERROR, ERR_OVERHEATING);
-			flag_run = false;
+			clear_flag(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
@@ -67,23 +64,23 @@ int main(void)
 		if(check_space())
 		{
 			append_log(ERROR, ERR_SPACE_FULL);
-			flag_run = false;
+			clear_flag(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
-*/
+        */
+
 		if(unblock_signals() != EXIT_SUCCESS)
 		{
 			append_log(ERROR, ERR_UNBLOCK_SIGNALS);
-			flag_run = false;
+			clear_flag(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
 		}
 
-        if(rcvd_sigalrm && flag_img_acq)
+        if((is_flag(FLAG_RCVD_SIGALRM) && is_flag(FLAG_IMG_ACQ)))
         {
-            rcvd_sigalrm = false;
-/* Unused since this is a development version
+            /* Unused since development version
             pthread_t thread1;
             pthread_t thread2;
             int result1;
@@ -92,7 +89,7 @@ int main(void)
             if(result1 != 0)
             {
                 append_log(ERROR, ERR_CREATE_THREAD);
-                flag_run = false;
+                clear_flag(FLAG_RUN);
                 daemon_terminate(true);
                 return EXIT_FAILURE;
             }
@@ -100,20 +97,24 @@ int main(void)
             if(result2 != 0)
             {
                 append_log(ERROR, ERR_CREATE_THREAD);
-                flag_run = false;
+                clear_flag(FLAG_RUN);
                 daemon_terminate(true);
                 return EXIT_FAILURE;
             }
             pthread_join(thread1, NULL);
             pthread_join(thread2, NULL);
-            if(flag_err_cams)
+            */
+            clear_flag(FLAG_RCVD_SIGALRM);
+			
+            /* Unused since development version
+            if(is_flag(FLAG_ERR_CAMS))
             {
                 append_log(ERROR, ERR_CAMERAS);
-                flag_run = false;
+                clear_flag(FLAG_RUN);
                 daemon_terminate(true);
                 return EXIT_FAILURE;
             }
-*/
+            */
         }
     }
 

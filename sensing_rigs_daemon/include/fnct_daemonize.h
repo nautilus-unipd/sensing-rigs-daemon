@@ -15,12 +15,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "constants.h"
 #include "logger.h"
 #include "messages.h"
-#include "constants.h"
 #include "fnct_helper.h"
+#include "fnct_runtime.h"
 #include "signal_handler.h"
-
 /**
  * Function that creates and initialise a new daemon process
  * from a parent caller, can be called inside the main function.

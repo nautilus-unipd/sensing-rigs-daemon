@@ -135,4 +135,6 @@ kill -SIGHUP $(cat /demon/run/sensing_rigs_daemon.pid)
 Software developed by:
 - Pasetto Niccolò
 
+- Zanardi Giulio
+
 ---

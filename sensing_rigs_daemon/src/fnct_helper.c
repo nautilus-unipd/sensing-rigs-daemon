@@ -1,5 +1,12 @@
 #include "fnct_helper.h"
 
+void init_daemon_flags(void)
+{
+    set_flag(FLAG_LOG_ACTIVE);
+    set_flag(FLAG_RUN);
+    set_flag(FLAG_IMG_ACQ);
+}
+
 void close_all_fds(void)
 {
 	int max_fd = sysconf(_SC_OPEN_MAX);
@@ -31,6 +38,7 @@ struct tm* get_local_time(void)
 	{
 		return NULL;
 	}
+
 	*(time_raw) = time(NULL);
 	struct tm* time_local = localtime(time_raw);
 	if(time_local == NULL)

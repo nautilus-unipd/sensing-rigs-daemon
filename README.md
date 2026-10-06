@@ -74,4 +74,6 @@ To make the comparison/testing easier ensure the changes are well documented and
 Software developed by:
 - Pasetto Niccolò
 
+- Zanardi Giulio
+
 ---

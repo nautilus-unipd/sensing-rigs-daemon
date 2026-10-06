@@ -11,12 +11,12 @@
 #include <stdbool.h>
 
 #include "constants.h"
+#include "fnct_runtime.h"
 
 /**
- * Global variable used to signal if any error occur in any
- * camera, used in the main loop to get their state.
+ * Function that set some flags true.
  */
-extern volatile bool flag_err_cams;
+extern void init_daemon_flags();
 
 /**
  * Function that closes all the file descriptors, to avoid leaving

@@ -8,9 +8,6 @@ static pthread_mutex_t mutex_mask = PTHREAD_MUTEX_INITIALIZER;
 static sigset_t block_mask;
 static sigset_t old_mask;
 
-bool volatile flag_img_acq = true;
-bool volatile rcvd_sigalrm = false;
-
 void sig_handler(int signo)
 {
 	if(signo == SIGTERM)
@@ -27,23 +24,23 @@ void sig_handler(int signo)
 	}
 	else if(signo == SIGHUP)
 	{
-        if(flag_img_acq)
+        if(is_flag(FLAG_IMG_ACQ))
         {
             append_log(INFO, MSG_RCVD_SIGHUP1);
-            flag_img_acq = false;
+            clear_flag(FLAG_IMG_ACQ);
         }
         else
         {
             append_log(INFO, MSG_RCVD_SIGHUP2);
-            flag_img_acq = true;
+            set_flag(FLAG_IMG_ACQ);
         }
 	}
     else if(signo == SIGALRM)
     {
-        if(flag_img_acq)
+        if(is_flag(FLAG_IMG_ACQ))
         {
             append_log(INFO, MSG_RCVD_SIGALRM);
-            rcvd_sigalrm = true;
+            set_flag(FLAG_RCVD_SIGALRM);
         }
     }
 	return;
