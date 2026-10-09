@@ -36,12 +36,12 @@ void sig_handler(int signo)
             set_flag(FLAG_IMG_ACQ);
         }
 	}
-    else if(signo == SIGALRM)
+    else if(signo == SIGUSR1)
     {
         if(is_flag(FLAG_IMG_ACQ))
         {
-            append_log(INFO, MSG_RCVD_SIGALRM);
-            set_flag(FLAG_RCVD_SIGALRM);
+            append_log(INFO, MSG_RCVD_SIGUSR1);
+            set_flag(FLAG_RCVD_SIGUSR1);
         }
     }
     else if(signo == SIGUSR2)

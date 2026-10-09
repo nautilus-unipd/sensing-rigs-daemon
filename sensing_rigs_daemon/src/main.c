@@ -64,7 +64,7 @@ int main(void)
             */
         }
 
-        if((is_flag(FLAG_RCVD_SIGALRM) && is_flag(FLAG_IMG_ACQ)))
+        if((is_flag(FLAG_RCVD_SIGUSR1) && is_flag(FLAG_IMG_ACQ)))
         {
             /* Unused since development version
             pthread_t thread1;
@@ -90,7 +90,7 @@ int main(void)
             pthread_join(thread1, NULL);
             pthread_join(thread2, NULL);
             */
-            clear_flag(FLAG_RCVD_SIGALRM);
+            clear_flag(FLAG_RCVD_SIGUSR1);
 			
             /* Unused since development version
             if(is_flag(FLAG_ERR_CAMS))
@@ -102,7 +102,6 @@ int main(void)
             }
             */
 
-            append_log(WARNING, MSG_ALL_GOOD);
             pause();
         }
     }

@@ -26,8 +26,8 @@
 #define MSG_DAEMON_STARTED "Daemon started successfully"
 #define MSG_RCVD_SIGHUP1 "Received SIGHUP, disabling image acquisition"
 #define MSG_RCVD_SIGHUP2 "Received SIGHUP, enabling image acquisition"
-#define MSG_RCVD_SIGALRM "Received SIGALRM, shooting"
-#define MSG_RCVD_SIGUSR2 "Received SIGUSR1, checking health"
+#define MSG_RCVD_SIGUSR1 "Received SIGUSR1, shooting"
+#define MSG_RCVD_SIGUSR2 "Received SIGUSR2, checking health"
 #define MSG_ALL_GOOD "Good loop"
 
 #endif //_MESSAGES_H_

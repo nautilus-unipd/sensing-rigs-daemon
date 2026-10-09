@@ -215,13 +215,27 @@ int daemon_create(void)
         return EXIT_FAILURE;
     }
 
-    // Start shooting timer (SIGALARM)
-    struct itimerval timer_shoot;
-    timer_shoot.it_value.tv_sec = INTERVAL_SHOOT;
-    timer_shoot.it_value.tv_usec = 0;
-    timer_shoot.it_interval.tv_sec = INTERVAL_SHOOT;
-    timer_shoot.it_interval.tv_usec = 0;
-    setitimer(ITIMER_REAL, &timer_shoot, NULL);
+    // Start health checks timer (SIGUSR1)
+    struct sigevent sev_usr1 = {0};
+    sev_usr1.sigev_notify = SIGEV_SIGNAL;
+    sev_usr1.sigev_signo = SIGUSR1;
+    timer_t timer_usr1;
+    if(timer_create(CLOCK_MONOTONIC, &sev_usr1, &timer_usr1) == -1)
+    {
+        append_log(ERROR, ERR_TIMER_CREATE);
+        return EXIT_FAILURE;
+    }
+
+    struct itimerspec inter_usr1 =
+    {
+        .it_value = { .tv_sec = INTERVAL_SHOOT, .tv_nsec = 0},
+        .it_interval = { .tv_sec = INTERVAL_SHOOT, . tv_nsec = 0}
+    };
+    if(timer_settime(timer_usr1, 0, &inter_usr1, NULL) == -1)
+    {
+        append_log(ERROR, ERR_TIMER_SET);
+        return EXIT_FAILURE;
+    }
 
     // Start health checks timer (SIGUSR2)
     struct sigevent sev_usr2 = {0};

@@ -30,7 +30,7 @@
  *  bit 4 -> Overheating condition detected.
  *  bit 5 -> Storage space exhausted.
  *  bit 6 -> Image acquisition enabled.
- *  bit 7 -> SIGALRM signal received.
+ *  bit 7 -> SIGUSR1 signal received.
  *  bit 8 -> SIGUSR2 signal received.
  */
 
@@ -89,12 +89,12 @@ extern _Atomic daemon_flags_t daemon_flags;
 #define FLAG_IMG_ACQ (1U << 6)
 
 /**
- * SIGALRM received flag.
+ * SIGUSR1 received flag.
  *
- * Set by the signal handler when a SIGALRM signal is received and
+ * Set by the signal handler when a SIGUSR1 signal is received and
  * cleared once the signal has been processed.
  */
-#define FLAG_RCVD_SIGALRM (1U << 7)
+#define FLAG_RCVD_SIGUSR1 (1U << 7)
 
 
 /**
