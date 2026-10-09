@@ -44,14 +44,6 @@ int main(void)
 			return EXIT_FAILURE;
         }
 
-        if(unblock_signals() != EXIT_SUCCESS)
-        {
-            append_log(ERROR, ERR_UNBLOCK_SIGNALS);
-            clear_flag(FLAG_RUN);
-            daemon_terminate(true);
-            return EXIT_FAILURE;
-        }
-
         if(is_flag(FLAG_RCVD_SIGUSR2))
         {
             clear_flag(FLAG_RCVD_SIGUSR2);
@@ -101,9 +93,17 @@ int main(void)
                 return EXIT_FAILURE;
             }
             */
-
-            pause();
         }
+
+        if(unblock_signals() != EXIT_SUCCESS)
+        {
+            append_log(ERROR, ERR_UNBLOCK_SIGNALS);
+            clear_flag(FLAG_RUN);
+            daemon_terminate(true);
+            return EXIT_FAILURE;
+        }
+
+        pause();
     }
 
     // Terminate daemon
