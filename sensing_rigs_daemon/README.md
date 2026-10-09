@@ -105,6 +105,9 @@ kill -SIGHUP $(cat /demon/run/sensing_rigs_daemon.pid)
 
 ## Versions
 
+- **1.2**:
+    - Now the health checks are performed when receiving a *SIGUSR2*.
+
 - **1.1**:
     - Added custom data structure to hold a certain number of the last log entries, instead of using a buffer.
     - Added a timer to send a *SIGALRM* every interval of acquisition.

@@ -42,41 +42,27 @@ int main(void)
 			clear_flag(FLAG_RUN);
 			daemon_terminate(true);
 			return EXIT_FAILURE;
-		}
+        }
 
-        /* Unused since development version
-		if(check_voltage())
-		{
-			append_log(ERROR, ERR_UNDERVOLTAGE);
-			clear_flag(FLAG_RUN);
-			daemon_terminate(true);
-			return EXIT_FAILURE;
-		}
+        if(unblock_signals() != EXIT_SUCCESS)
+        {
+            append_log(ERROR, ERR_UNBLOCK_SIGNALS);
+            clear_flag(FLAG_RUN);
+            daemon_terminate(true);
+            return EXIT_FAILURE;
+        }
 
-		if(check_temperature())
-		{
-			append_log(ERROR, ERR_OVERHEATING);
-			clear_flag(FLAG_RUN);
-			daemon_terminate(true);
-			return EXIT_FAILURE;
-		}
-
-		if(check_space())
-		{
-			append_log(ERROR, ERR_SPACE_FULL);
-			clear_flag(FLAG_RUN);
-			daemon_terminate(true);
-			return EXIT_FAILURE;
-		}
-        */
-
-		if(unblock_signals() != EXIT_SUCCESS)
-		{
-			append_log(ERROR, ERR_UNBLOCK_SIGNALS);
-			clear_flag(FLAG_RUN);
-			daemon_terminate(true);
-			return EXIT_FAILURE;
-		}
+        if(is_flag(FLAG_RCVD_SIGUSR2))
+        {
+            clear_flag(FLAG_RCVD_SIGUSR2);
+            /* Unused since development version
+            if(health_checks())
+            {
+		        daemon_terminate(false);
+                return EXIT_FAILURE;
+            }
+            */
+        }
 
         if((is_flag(FLAG_RCVD_SIGALRM) && is_flag(FLAG_IMG_ACQ)))
         {
@@ -115,6 +101,9 @@ int main(void)
                 return EXIT_FAILURE;
             }
             */
+
+            append_log(WARNING, MSG_ALL_GOOD);
+            pause();
         }
     }
 

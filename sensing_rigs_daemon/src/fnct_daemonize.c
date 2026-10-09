@@ -138,14 +138,13 @@ int daemon_create(void)
 		perror(ERR_DAEMON_CREATE);
 		return EXIT_FAILURE;
 	}
-
     if((mkdir(DAEMON_PATH, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH)) != 0 && (errno != EEXIST))
 	{
 		perror(ERR_DAEMON_CREATE);
 		return EXIT_FAILURE;
 	}
 
-    char path_log[256];
+    char path_log[MAX_RUNTIME_PATH];
     snprintf(path_log, sizeof(path_log), "%s%s", DAEMON_PATH, DAEMON_PATH_LOG);
     if(mkdir(path_log, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0 && (errno != EEXIST))
     {
@@ -153,7 +152,7 @@ int daemon_create(void)
         return EXIT_FAILURE;
     }
 
-    char path_img[256];
+    char path_img[MAX_RUNTIME_PATH];
     snprintf(path_img, sizeof(path_img), "%s%s", DAEMON_PATH, DAEMON_PATH_CAP);
     if(mkdir(path_img, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0 && (errno != EEXIST))
     {
@@ -161,7 +160,7 @@ int daemon_create(void)
         return EXIT_FAILURE;
     }
 
-    char path_img_rx[256];
+    char path_img_rx[MAX_RUNTIME_PATH];
     snprintf(path_img_rx, sizeof(path_img_rx), "%s%s%s", DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_RX);
     if(mkdir(path_img_rx, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0 && (errno != EEXIST))
     {
@@ -169,7 +168,7 @@ int daemon_create(void)
         return EXIT_FAILURE;
     }
 
-    char path_img_lx[256];
+    char path_img_lx[MAX_RUNTIME_PATH];
     snprintf(path_img_lx, sizeof(path_img_lx), "%s%s%s", DAEMON_PATH, DAEMON_PATH_CAP, DAEMON_PATH_LX);
     if(mkdir(path_img_lx, S_IWUSR | S_IRUSR | S_IXUSR | S_IRGRP | S_IROTH) != 0 && (errno != EEXIST))
     {
@@ -216,13 +215,35 @@ int daemon_create(void)
         return EXIT_FAILURE;
     }
 
-    // Start timer
+    // Start shooting timer (SIGALARM)
     struct itimerval timer_shoot;
     timer_shoot.it_value.tv_sec = INTERVAL_SHOOT;
     timer_shoot.it_value.tv_usec = 0;
     timer_shoot.it_interval.tv_sec = INTERVAL_SHOOT;
     timer_shoot.it_interval.tv_usec = 0;
     setitimer(ITIMER_REAL, &timer_shoot, NULL);
+
+    // Start health checks timer (SIGUSR2)
+    struct sigevent sev_usr2 = {0};
+    sev_usr2.sigev_notify = SIGEV_SIGNAL;
+    sev_usr2.sigev_signo = SIGUSR2;
+    timer_t timer_usr2;
+    if(timer_create(CLOCK_MONOTONIC, &sev_usr2, &timer_usr2) == -1)
+    {
+        append_log(ERROR, ERR_TIMER_CREATE);
+        return EXIT_FAILURE;
+    }
+
+    struct itimerspec inter_usr2 =
+    {
+        .it_value = { .tv_sec = INTERVAL_CHECKS, .tv_nsec = 0},
+        .it_interval = { .tv_sec = INTERVAL_CHECKS, . tv_nsec = 0}
+    };
+    if(timer_settime(timer_usr2, 0, &inter_usr2, NULL) == -1)
+    {
+        append_log(ERROR, ERR_TIMER_SET);
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

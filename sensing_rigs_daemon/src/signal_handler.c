@@ -2,6 +2,7 @@
 
 //                          1       2       3        6        10       12       14       15       20
 const uint8_t BLCK_SIG[] = {SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGUSR1, SIGUSR2, SIGALRM, SIGTERM, SIGTSTP};
+//const uint8_t BLCK_SIG[] = {SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGUSR1, SIGALRM, SIGTSTP};
 
 static pthread_mutex_t mutex_mask = PTHREAD_MUTEX_INITIALIZER;
 
@@ -42,6 +43,11 @@ void sig_handler(int signo)
             append_log(INFO, MSG_RCVD_SIGALRM);
             set_flag(FLAG_RCVD_SIGALRM);
         }
+    }
+    else if(signo == SIGUSR2)
+    {
+        append_log(INFO, MSG_RCVD_SIGUSR2);
+        set_flag(FLAG_RCVD_SIGUSR2);
     }
 	return;
 }

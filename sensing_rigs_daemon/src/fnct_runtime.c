@@ -114,6 +114,29 @@ bool check_voltage(void)
     return false;
 }
 
+bool health_checks(void)
+{
+    if(check_voltage())
+    {
+        append_log(ERROR, ERR_UNDERVOLTAGE);
+        clear_flag(FLAG_RUN);
+        return true;
+    }
+    if(check_temperature())
+    {
+        append_log(ERROR, ERR_OVERHEATING);
+        clear_flag(FLAG_RUN);
+        return true;
+    }
+    if(check_space())
+    {
+        append_log(ERROR, ERR_SPACE_FULL);
+        clear_flag(FLAG_RUN);
+        return true;
+    }
+    return false;
+}
+
 void* shoot(void* arg)
 {
     uint8_t cam = *(uint8_t*)arg;

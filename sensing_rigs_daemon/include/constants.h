@@ -29,9 +29,14 @@
 #define MAX_LOG_ENTRIES 5
 
 /**
- * Interval for the timer sending the signal to capture a stereo image.
+ * Interval for the timer to send a SIGALARM, used to shoot images.
  */
-#define INTERVAL_SHOOT 3
+#define INTERVAL_SHOOT 4
+
+/**
+ * Interval for the timer to send a SIGUSR2, used for health checks.
+ */
+ #define INTERVAL_CHECKS 10
 
 /**
  * Constant defining the appending mode for 'fopen()'
@@ -190,5 +195,10 @@
  * Offset to add in order to obtain a valid year.
  */
 #define YEAR_OFFSET 1900
+
+/**
+ *
+ */
+#define MAX_RUNTIME_PATH 256
 
 #endif //_CONSTANTS_H_

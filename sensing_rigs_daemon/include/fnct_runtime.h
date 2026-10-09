@@ -13,6 +13,8 @@
 #include <sys/statvfs.h>
 
 #include "constants.h"
+#include "messages.h"
+#include "logger.h"
 
 /**
  * Daemon's shared flags.
@@ -20,18 +22,21 @@
  * Each bit represents a specific boolean condition shared across
  * different daemon modules.
  *
- * Bit mapping:
- *   bit 0 -> Camera error detected.
- *   bit 1 -> Logging subsystem enabled.
- *   bit 2 -> Main daemon loop running.
- *   bit 3 -> Undervoltage condition detected.
- *   bit 4 -> Overheating condition detected.
- *   bit 5 -> Storage space exhausted.
- *   bit 6 -> Image acquisition enabled.
- *   bit 7 -> SIGALRM signal received.
+ * Bit mappings:
+ *  bit 0 -> Camera error detected.
+ *  bit 1 -> Logging subsystem enabled.
+ *  bit 2 -> Main daemon loop running.
+ *  bit 3 -> Undervoltage condition detected.
+ *  bit 4 -> Overheating condition detected.
+ *  bit 5 -> Storage space exhausted.
+ *  bit 6 -> Image acquisition enabled.
+ *  bit 7 -> SIGALRM signal received.
+ *  bit 8 -> SIGUSR2 signal received.
  */
-typedef uint8_t daemon_flags_t;
+
+typedef uint16_t daemon_flags_t;
 extern _Atomic daemon_flags_t daemon_flags;
+//extern _Atomic uint16_t daemon_flags;
 
 /**
  * Camera error flag.
@@ -91,6 +96,14 @@ extern _Atomic daemon_flags_t daemon_flags;
  */
 #define FLAG_RCVD_SIGALRM (1U << 7)
 
+
+/**
+ * SIGUSR1 received flag.
+ * Set by the signal handler when a SIGUSR1 signal is received and
+ * cleared once the signal has been processed.
+ */
+#define FLAG_RCVD_SIGUSR2 (1U << 8)
+
 /* ====================== FLAG OPERATIONS ====================== */
 
 #define set_flag(f)   (atomic_fetch_or_explicit(&daemon_flags, (f), memory_order_relaxed))
@@ -124,6 +137,13 @@ extern bool check_temperature(void);
  *                  false otherwise.
  */
 extern bool check_voltage(void);
+
+/**
+ * Function that groups all the health checks done on the Raspberry.
+ * @return  bool    true if an health check has failed
+ *                  false otherwise
+ */
+extern bool health_checks(void);
 
 /**
  * Function that capture a photo from one camera, specified as parameter,
